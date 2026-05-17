@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+  <title>Imóvel</title>
+
+  <style>
+
+    body{
+      font-family:Arial,sans-serif;
+      background:#f1f5f9;
+      padding:40px;
+    }
+
+    .box{
+      background:white;
+      max-width:800px;
+      margin:auto;
+      padding:40px;
+      border-radius:16px;
+      box-shadow:0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    h1{
+      margin-bottom:30px;
+      color:#0f172a;
+    }
+
+    p{
+      margin-bottom:15px;
+      font-size:18px;
+    }
+
+    button{
+      margin-top:30px;
+      padding:12px 20px;
+      border:none;
+      border-radius:10px;
+      background:#0f172a;
+      color:white;
+      cursor:pointer;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="box">
+
+  <h1 id="titulo"></h1>
+
+  <p>
+    Aqui futuramente aparecerão:
+  </p>
+
+  <p>• Valor do aluguel</p>
+  <p>• Inquilino</p>
+  <p>• CPF</p>
+  <p>• Contrato</p>
+  <p>• Despesas</p>
+  <p>• Fotos</p>
+
+  <button onclick="voltar()">
+    Voltar
+  </button>
+
+</div>
+
+<script>
+
+  if(localStorage.getItem("logado") !== "sim"){
+    window.location.href = "index.html";
+  }
+
+  const params =
+    new URLSearchParams(window.location.search);
+
+  const id = params.get("id");
+
+  document.getElementById("titulo").innerText =
+    id.charAt(0).toUpperCase() + id.slice(1);
+
+  function voltar(){
+
+    window.location.href = "painel.html";
+  }
+
+</script>
+
+</body>
+</html>

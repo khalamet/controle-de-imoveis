@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Imóveis</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, sans-serif;
+    }
+
+    body{
+      background:#f4f7fa;
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    .login-box{
+      background:white;
+      width:350px;
+      padding:40px;
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    h1{
+      text-align:center;
+      margin-bottom:30px;
+      color:#1e293b;
+      font-size:28px;
+    }
+
+    input{
+      width:100%;
+      padding:14px;
+      margin-bottom:15px;
+      border:1px solid #cbd5e1;
+      border-radius:10px;
+      font-size:16px;
+    }
+
+    button{
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:10px;
+      background:#0f172a;
+      color:white;
+      font-size:16px;
+      cursor:pointer;
+      transition:0.3s;
+    }
+
+    button:hover{
+      background:#1e293b;
+    }
+
+    .erro{
+      color:red;
+      text-align:center;
+      margin-top:15px;
+      display:none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <h1>Controle de Imóveis</h1>
+
+    <input type="email" id="email" placeholder="Digite seu email">
+    <input type="password" id="senha" placeholder="Digite sua senha">
+
+    <button onclick="fazerLogin()">Entrar</button>
+
+    <div class="erro" id="erro">
+      Email ou senha incorretos
+    </div>
+  </div>
+
+  <script src="usuarios.js"></script>
+
+  <script>
+    function fazerLogin(){
+
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+
+      const usuarioEncontrado = usuarios.find(usuario =>
+        usuario.email === email && usuario.senha === senha
+      );
+
+      if(usuarioEncontrado){
+
+        localStorage.setItem("usuarioLogado", email);
+
+        window.location.href = "painel.html";
+
+      } else {
+
+        document.getElementById("erro").style.display = "block";
+
+      }
+    }
+  </script>
+
+</body>
+</html>

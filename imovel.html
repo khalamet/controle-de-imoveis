@@ -1,87 +1,161 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0">
-
-  <title>Imóvel</title>
-
-  <style>
-
-    body{
-      font-family:Arial,sans-serif;
-      background:#f1f5f9;
-      padding:40px;
-    }
-
-    .box{
-      background:white;
-      max-width:800px;
-      margin:auto;
-      padding:40px;
-      border-radius:16px;
-      box-shadow:0 10px 25px rgba(0,0,0,0.08);
-    }
-
-    h1{
-      margin-bottom:30px;
-      color:#0f172a;
-    }
-
-    p{
-      margin-bottom:15px;
-      font-size:18px;
-    }
-
-    button{
-      margin-top:30px;
-      padding:12px 20px;
-      border:none;
-      border-radius:10px;
-      background:#0f172a;
-      color:white;
-      cursor:pointer;
-    }
-
-  </style>
-</head>
-<body>
-
-<div class="box">
-
-  <h1 id="titulo"></h1>
-
-  <p>
-    Aqui futuramente aparecerão:
-  </p>
-
-  <p>• Valor do aluguel</p>
-  <p>• Inquilino</p>
-  <p>• CPF</p>
-  <p>• Contrato</p>
-  <p>• Despesas</p>
-  <p>• Fotos</p>
-
-  <button onclick="voltar()">
-    Voltar
-  </button>
-
-</div>
-
 <script>
 
   if(localStorage.getItem("logado") !== "sim"){
     window.location.href = "index.html";
   }
 
+  const dados = {
+
+    livingcomfort: {
+
+      nome: "Living Comfort",
+
+      endereco:
+      "Rua Rita Gama Barros, 255, torre Ventura, Apto 301 - Dom Pedro – Manaus/AM – CEP: 69040-030",
+
+      rgi:
+      "24.468 – 5º Ofício de Manaus",
+
+      iptu:
+      "456092"
+    },
+
+    tijuca: {
+
+      nome: "Tijuca",
+
+      endereco:
+      "Rua Dr. Otávio Kelly, nº 31, apto 304 – Tijuca – Rio de Janeiro/RJ - CEP: 20511-280",
+
+      rgi:
+      "33.740",
+
+      iptu:
+      "0.493.391-7"
+    },
+
+    botafogo: {
+
+      nome: "Botafogo",
+
+      endereco:
+      "Rua Marquês de Olinda, 45 apto 308 – Botafogo – Rio de Janeiro/RJ – CEP: 22251-040",
+
+      rgi:
+      "28.553",
+
+      iptu:
+      "1184184-8"
+    },
+
+    catumbi: {
+
+      nome: "Catumbi",
+
+      endereco:
+      "Rua Itapiru, N. 245, Apto 208, Catumbi - Rio De Janeiro/RJ – CEP: 20251-031",
+
+      rgi:
+      "30041",
+
+      iptu:
+      "14071880"
+    },
+
+    casadompedro: {
+
+      nome: "Casa Dom Pedro",
+
+      endereco:
+      "Rua Mem de Sá, 304 – Dom Pedro I – Manaus/AM",
+
+      rgi:
+      "30041",
+
+      iptu:
+      "14071880"
+    },
+
+    lote31: {
+
+      nome: "Lote 31",
+
+      endereco:
+      "Ramal MONTE CASTELO, 31 - Bairro CHACARAS DO GOIANO - Compl. QD 04 / LT 31 - CEP 69.415-000",
+
+      rgi:
+      "1.052",
+
+      iptu:
+      "24.227"
+    },
+
+    lote32: {
+
+      nome: "Lote 32",
+
+      endereco:
+      "Ramal MONTE CASTELO, 31 - Bairro CHACARAS DO GOIANO - Compl. QD 04 / LT 32 - CEP 69.415-000",
+
+      rgi:
+      "1.053",
+
+      iptu:
+      "24.228"
+    },
+
+    sitio: {
+
+      nome: "Sítio",
+
+      endereco:
+      "Gleba PIC Bela Vista, Município de Iranduba/AM",
+
+      rgi:
+      "-",
+
+      iptu:
+      "-"
+    },
+
+    porto: {
+
+      nome: "Porto",
+
+      endereco:
+      "Rua Dom Afonso Henriques, 2573 apto 8º andar esquerda frente nº 05 – Distrito: Porto Concelho: Maia Freguesia: Águas Santas - 4425-057.",
+
+      rgi:
+      "ARTIGO MATRICIAL: 6335",
+
+      iptu:
+      "NIP"
+    }
+
+  };
+
   const params =
     new URLSearchParams(window.location.search);
 
   const id = params.get("id");
 
+  const imovel = dados[id];
+
   document.getElementById("titulo").innerText =
-    id.charAt(0).toUpperCase() + id.slice(1);
+    imovel.nome;
+
+  document.querySelector(".box").innerHTML += `
+
+    <p><strong>Endereço:</strong><br>
+    ${imovel.endereco}</p>
+
+    <p><strong>Matrícula RGI:</strong><br>
+    ${imovel.rgi}</p>
+
+    <p><strong>Matrícula IPTU:</strong><br>
+    ${imovel.iptu}</p>
+
+  `;
 
   function voltar(){
 
@@ -89,6 +163,3 @@
   }
 
 </script>
-
-</body>
-</html>

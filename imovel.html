@@ -62,7 +62,8 @@
     }
 
     .campo input,
-    .campo textarea{
+    .campo textarea,
+    .campo select{
 
       width:100%;
 
@@ -119,6 +120,10 @@
       font-weight:bold;
     }
 
+    #camposAluguel{
+      display:none;
+    }
+
   </style>
 </head>
 <body>
@@ -136,6 +141,7 @@
     <input
       type="text"
       id="nome">
+
   </div>
 
   <div class="campo">
@@ -143,6 +149,7 @@
     <label>Endereço</label>
 
     <textarea id="endereco"></textarea>
+
   </div>
 
   <div class="campo">
@@ -152,6 +159,7 @@
     <input
       type="text"
       id="rgi">
+
   </div>
 
   <div class="campo">
@@ -161,6 +169,56 @@
     <input
       type="text"
       id="iptu">
+
+  </div>
+
+  <div class="campo">
+
+    <label>Alugado?</label>
+
+    <select
+      id="alugado"
+      onchange="toggleAluguel()">
+
+      <option value="nao">Não</option>
+      <option value="sim">Sim</option>
+
+    </select>
+
+  </div>
+
+  <div id="camposAluguel">
+
+    <div class="campo">
+
+      <label>Valor do aluguel</label>
+
+      <input
+        type="text"
+        id="valor_aluguel">
+
+    </div>
+
+    <div class="campo">
+
+      <label>Último pagamento</label>
+
+      <input
+        type="date"
+        id="ultimo_pagamento">
+
+    </div>
+
+    <div class="campo">
+
+      <label>Inquilino atual</label>
+
+      <input
+        type="text"
+        id="inquilino">
+
+    </div>
+
   </div>
 
   <div class="botoes">
@@ -199,7 +257,7 @@
     "https://xkiswuhpgbifjshjmuvf.supabase.co";
 
   const SUPABASE_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraXN3dWhwZ2JpZmpzaGptdXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODk4OTksImV4cCI6MjA5NDU2NTg5OX0.MfDgb2Ie-iuHtaSHOvI1w_lL8B5yqlSujJL-PMKhKGg";
+    "SUA_ANON_KEY_AQUI";
 
   const supabaseClient =
     supabase.createClient(
@@ -213,6 +271,24 @@
   const slug = params.get("id");
 
   let imovelId = null;
+
+  function toggleAluguel(){
+
+    const alugado =
+      document.getElementById("alugado").value;
+
+    const campos =
+      document.getElementById("camposAluguel");
+
+    if(alugado === "sim"){
+
+      campos.style.display = "block";
+
+    }else{
+
+      campos.style.display = "none";
+    }
+  }
 
   async function carregarImovel(){
 
@@ -248,9 +324,26 @@
 
     document.getElementById("iptu")
     .value = data.iptu;
+
+    document.getElementById("alugado")
+    .value = data.alugado ? "sim" : "nao";
+
+    document.getElementById("valor_aluguel")
+    .value = data.valor_aluguel || "";
+
+    document.getElementById("ultimo_pagamento")
+    .value = data.ultimo_pagamento || "";
+
+    document.getElementById("inquilino")
+    .value = data.inquilino || "";
+
+    toggleAluguel();
   }
 
   async function salvar(){
+
+    const alugado =
+      document.getElementById("alugado").value === "sim";
 
     const { error } =
       await supabaseClient
@@ -267,7 +360,19 @@
         document.getElementById("rgi").value,
 
         iptu:
-        document.getElementById("iptu").value
+        document.getElementById("iptu").value,
+
+        alugado:
+        alugado,
+
+        valor_aluguel:
+        document.getElementById("valor_aluguel").value,
+
+        ultimo_pagamento:
+        document.getElementById("ultimo_pagamento").value,
+
+        inquilino:
+        document.getElementById("inquilino").value
 
       })
       .eq("id", imovelId);

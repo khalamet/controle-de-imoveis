@@ -7,6 +7,8 @@
 
   <title>Detalhes do Imóvel</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
 
     *{
@@ -39,37 +41,61 @@
     }
 
     h1{
-      margin-bottom:30px;
+      margin-bottom:35px;
       color:#0f172a;
       font-size:36px;
     }
 
-    .info{
+    .campo{
       margin-bottom:25px;
     }
 
-    .titulo{
-      font-weight:bold;
-      color:#334155;
+    .campo label{
+
+      display:block;
+
       margin-bottom:8px;
+
+      font-weight:bold;
+
+      color:#334155;
     }
 
-    .valor{
-      color:#0f172a;
-      line-height:1.6;
+    .campo input,
+    .campo textarea{
+
+      width:100%;
+
+      padding:14px;
+
+      border-radius:12px;
+
+      border:1px solid #cbd5e1;
+
+      font-size:16px;
+    }
+
+    textarea{
+      min-height:120px;
+      resize:vertical;
+    }
+
+    .botoes{
+
+      display:flex;
+
+      gap:15px;
+
+      margin-top:35px;
     }
 
     button{
-
-      margin-top:35px;
 
       padding:14px 22px;
 
       border:none;
 
       border-radius:12px;
-
-      background:#0f172a;
 
       color:white;
 
@@ -78,167 +104,195 @@
       cursor:pointer;
     }
 
+    .salvar{
+      background:#16a34a;
+    }
+
+    .voltar{
+      background:#0f172a;
+    }
+
+    .status{
+
+      margin-top:25px;
+
+      font-weight:bold;
+    }
+
   </style>
 </head>
 <body>
 
 <div class="box">
 
-  <h1 id="nome"></h1>
+  <h1 id="titulo">
+    Carregando...
+  </h1>
 
-  <div class="info">
-    <div class="titulo">
-      Endereço
-    </div>
+  <div class="campo">
 
-    <div class="valor" id="endereco"></div>
+    <label>Nome do imóvel</label>
+
+    <input
+      type="text"
+      id="nome">
   </div>
 
-  <div class="info">
-    <div class="titulo">
-      Matrícula RGI
-    </div>
+  <div class="campo">
 
-    <div class="valor" id="rgi"></div>
+    <label>Endereço</label>
+
+    <textarea id="endereco"></textarea>
   </div>
 
-  <div class="info">
-    <div class="titulo">
-      Matrícula IPTU
-    </div>
+  <div class="campo">
 
-    <div class="valor" id="iptu"></div>
+    <label>Matrícula RGI</label>
+
+    <input
+      type="text"
+      id="rgi">
   </div>
 
-  <button onclick="voltar()">
-    Voltar
-  </button>
+  <div class="campo">
+
+    <label>Matrícula IPTU</label>
+
+    <input
+      type="text"
+      id="iptu">
+  </div>
+
+  <div class="botoes">
+
+    <button
+      class="salvar"
+      onclick="salvar()">
+
+      Salvar
+    </button>
+
+    <button
+      class="voltar"
+      onclick="voltar()">
+
+      Voltar
+    </button>
+
+  </div>
+
+  <div
+    class="status"
+    id="status">
+  </div>
 
 </div>
 
 <script>
 
   if(localStorage.getItem("logado") !== "sim"){
+
     window.location.href = "index.html";
   }
 
-  const dados = {
+  const SUPABASE_URL =
+    "https://xkiswuhpgbifjshjmuvf.supabase.co";
 
-    livingcomfort: {
-      nome: "Living Comfort",
-      endereco:
-      "Rua Rita Gama Barros, 255, torre Ventura, Apto 301 - Dom Pedro – Manaus/AM – CEP: 69040-030",
-      rgi:
-      "24.468 – 5º Ofício de Manaus",
-      iptu:
-      "456092"
-    },
+  const SUPABASE_KEY =
+    "SUA_ANON_KEY_AQUI";
 
-    tijuca: {
-      nome: "Tijuca",
-      endereco:
-      "Rua Dr. Otávio Kelly, nº 31, apto 304 – Tijuca – Rio de Janeiro/RJ - CEP: 20511-280",
-      rgi:
-      "33.740",
-      iptu:
-      "0.493.391-7"
-    },
-
-    botafogo: {
-      nome: "Botafogo",
-      endereco:
-      "Rua Marquês de Olinda, 45 apto 308 – Botafogo – Rio de Janeiro/RJ – CEP: 22251-040",
-      rgi:
-      "28.553",
-      iptu:
-      "1184184-8"
-    },
-
-    catumbi: {
-      nome: "Catumbi",
-      endereco:
-      "Rua Itapiru, N. 245, Apto 208, Catumbi - Rio De Janeiro/RJ – CEP: 20251-031",
-      rgi:
-      "30041",
-      iptu:
-      "14071880"
-    },
-
-    casadompedro: {
-      nome: "Casa Dom Pedro",
-      endereco:
-      "Rua Mem de Sá, 304 – Dom Pedro I – Manaus/AM",
-      rgi:
-      "30041",
-      iptu:
-      "14071880"
-    },
-
-    lote31: {
-      nome: "Lote 31",
-      endereco:
-      "Ramal MONTE CASTELO, 31 - Bairro CHACARAS DO GOIANO - Compl. QD 04 / LT 31 - CEP 69.415-000",
-      rgi:
-      "1.052",
-      iptu:
-      "24.227"
-    },
-
-    lote32: {
-      nome: "Lote 32",
-      endereco:
-      "Ramal MONTE CASTELO, 31 - Bairro CHACARAS DO GOIANO - Compl. QD 04 / LT 32 - CEP 69.415-000",
-      rgi:
-      "1.053",
-      iptu:
-      "24.228"
-    },
-
-    sitio: {
-      nome: "Sítio",
-      endereco:
-      "Gleba PIC Bela Vista, Município de Iranduba/AM",
-      rgi:
-      "-",
-      iptu:
-      "-"
-    },
-
-    porto: {
-      nome: "Porto",
-      endereco:
-      "Rua Dom Afonso Henriques, 2573 apto 8º andar esquerda frente nº 05 – Distrito: Porto Concelho: Maia Freguesia: Águas Santas - 4425-057.",
-      rgi:
-      "ARTIGO MATRICIAL: 6335",
-      iptu:
-      "NIP"
-    }
-
-  };
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
 
   const params =
     new URLSearchParams(window.location.search);
 
-  const id = params.get("id");
+  const slug = params.get("id");
 
-  const imovel = dados[id];
+  let imovelId = null;
 
-  document.getElementById("nome").innerText =
-    imovel.nome;
+  async function carregarImovel(){
 
-  document.getElementById("endereco").innerText =
-    imovel.endereco;
+    const { data, error } =
+      await supabaseClient
+      .from("imoveis")
+      .select("*")
+      .eq("slug", slug)
+      .single();
 
-  document.getElementById("rgi").innerText =
-    imovel.rgi;
+    if(error){
 
-  document.getElementById("iptu").innerText =
-    imovel.iptu;
+      document.getElementById("titulo")
+      .innerText =
+      "Erro ao carregar imóvel";
+
+      return;
+    }
+
+    imovelId = data.id;
+
+    document.getElementById("titulo")
+    .innerText = data.nome;
+
+    document.getElementById("nome")
+    .value = data.nome;
+
+    document.getElementById("endereco")
+    .value = data.endereco;
+
+    document.getElementById("rgi")
+    .value = data.rgi;
+
+    document.getElementById("iptu")
+    .value = data.iptu;
+  }
+
+  async function salvar(){
+
+    const { error } =
+      await supabaseClient
+      .from("imoveis")
+      .update({
+
+        nome:
+        document.getElementById("nome").value,
+
+        endereco:
+        document.getElementById("endereco").value,
+
+        rgi:
+        document.getElementById("rgi").value,
+
+        iptu:
+        document.getElementById("iptu").value
+
+      })
+      .eq("id", imovelId);
+
+    if(error){
+
+      document.getElementById("status")
+      .innerText =
+      "Erro ao salvar.";
+
+      return;
+    }
+
+    document.getElementById("status")
+    .innerText =
+    "Alterações salvas com sucesso.";
+  }
 
   function voltar(){
 
-    window.location.href = "painel.html";
+    window.location.href =
+      "painel.html";
   }
+
+  carregarImovel();
 
 </script>
 

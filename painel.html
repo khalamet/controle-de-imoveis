@@ -22,11 +22,9 @@
     }
 
     .topo{
-
       display:flex;
       justify-content:space-between;
       align-items:center;
-
       margin-bottom:40px;
     }
 
@@ -36,93 +34,52 @@
     }
 
     .logout{
-
       background:#dc2626;
-
       color:white;
-
       border:none;
-
       padding:12px 20px;
-
       border-radius:12px;
-
       cursor:pointer;
-
       font-size:16px;
-
-      transition:0.3s;
-    }
-
-    .logout:hover{
-      opacity:0.9;
     }
 
     .grid{
-
       display:grid;
-
       grid-template-columns:
-        repeat(auto-fit,minmax(260px,1fr));
+      repeat(auto-fit,minmax(260px,1fr));
 
       gap:25px;
     }
 
     .card{
-
       background:white;
-
       padding:30px;
-
       border-radius:20px;
-
       box-shadow:
-        0 10px 25px rgba(0,0,0,0.08);
+      0 10px 25px rgba(0,0,0,0.08);
 
       transition:0.3s;
     }
 
     .card:hover{
-
       transform:translateY(-6px);
-
-      box-shadow:
-        0 15px 35px rgba(0,0,0,0.12);
     }
 
     .card h2{
-
       margin-bottom:22px;
-
       color:#0f172a;
-
       font-size:26px;
     }
 
     .btn{
-
       width:100%;
-
       padding:14px;
-
       border:none;
-
       border-radius:12px;
-
       background:#0f172a;
-
       color:white;
-
       font-size:16px;
-
       cursor:pointer;
-
-      transition:0.3s;
-    }
-
-    .btn:hover{
-
-      background:#1e293b;
     }
 
   </style>
@@ -146,129 +103,102 @@
 <div class="grid">
 
   <div class="card">
-
     <h2>Botafogo</h2>
 
-    <button
-      class="btn"
+    <button class="btn"
       onclick="abrirImovel('botafogo')">
 
       Abrir
 
     </button>
-
   </div>
 
   <div class="card">
-
     <h2>Catumbi</h2>
 
-    <button
-      class="btn"
+    <button class="btn"
       onclick="abrirImovel('catumbi')">
 
       Abrir
 
     </button>
-
   </div>
 
   <div class="card">
-
     <h2>Tijuca</h2>
 
-    <button
-      class="btn"
+    <button class="btn"
       onclick="abrirImovel('tijuca')">
 
       Abrir
 
     </button>
-
   </div>
 
   <div class="card">
-
     <h2>Porto</h2>
 
-    <button
-      class="btn"
+    <button class="btn"
       onclick="abrirImovel('porto')">
 
       Abrir
 
     </button>
-
   </div>
 
   <div class="card">
-
     <h2>Living Comfort</h2>
 
-    <button
-      class="btn"
+    <button class="btn"
       onclick="abrirImovel('livingcomfort')">
 
       Abrir
 
     </button>
-
   </div>
 
   <div class="card">
-
     <h2>Sítio</h2>
 
-    <button
-      class="btn"
+    <button class="btn"
       onclick="abrirImovel('sitio')">
 
       Abrir
 
     </button>
-
   </div>
 
   <div class="card">
-
     <h2>Lote 31</h2>
 
-    <button
-      class="btn"
+    <button class="btn"
       onclick="abrirImovel('lote31')">
 
       Abrir
 
     </button>
-
   </div>
 
   <div class="card">
-
     <h2>Lote 32</h2>
 
-    <button
-      class="btn"
+    <button class="btn"
       onclick="abrirImovel('lote32')">
 
       Abrir
 
     </button>
-
   </div>
 
   <div class="card">
-
     <h2>Casa Dom Pedro</h2>
 
-    <button
-      class="btn"
+    <button class="btn"
       onclick="abrirImovel('casadompedro')">
 
       Abrir
 
     </button>
-
   </div>
 
 </div>
@@ -276,7 +206,6 @@
 <script>
 
   if(localStorage.getItem("logado") !== "sim"){
-
     window.location.href = "index.html";
   }
 

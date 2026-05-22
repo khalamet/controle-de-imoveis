@@ -421,14 +421,25 @@
     }
 
     const extensao =
-      arquivo.name.split(".").pop();
+  arquivo.name.split(".").pop();
 
-    const nomeArquivo =
-      slug +
-      "-" +
-      Date.now() +
-      "." +
-      extensao;
+const nomeSemAcento =
+  arquivo.name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+const nomeSeguro =
+  nomeSemAcento
+    .replace(/[^a-zA-Z0-9]/g, "_");
+
+const nomeArquivo =
+  slug +
+  "-" +
+  Date.now() +
+  "-" +
+  nomeSeguro +
+  "." +
+  extensao;
 
     const { error: uploadError } =
       await supabaseClient

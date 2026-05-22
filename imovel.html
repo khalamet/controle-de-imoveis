@@ -416,9 +416,15 @@
       return;
     }
 
-    const nomeArquivo =
-      slug + "-" + Date.now() + "-" +
-      arquivo.name;
+    const nomeLimpo =
+  arquivo.name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9.-]/g, "_");
+
+const nomeArquivo =
+  slug + "-" + Date.now() + "-" +
+  nomeLimpo;
 
     const { error: uploadError } =
       await supabaseClient

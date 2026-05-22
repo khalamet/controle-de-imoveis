@@ -665,48 +665,56 @@
 
     doc.setFont("helvetica", "normal");
 
-    doc.text(
-      "LOCATÁRIO(A):",
-      80,
-      55
-    );
-
-    doc.setFont("helvetica", "bold");
-
-    doc.text(
-      inquilino || "Não informado",
-      80,
-      65
-    );
-
     doc.setFont("helvetica", "normal");
 
-    doc.text(
-      "LOCADOR(A):",
-      145,
-      55
-    );
+doc.text(
+  "LOCATÁRIO(A):",
+  20,
+  55
+);
 
-    doc.setFont("helvetica", "bold");
+doc.setFont("helvetica", "bold");
 
-    doc.text(
-      locador,
-      145,
-      65
-    );
+doc.text(
+  inquilino || "Não informado",
+  20,
+  65,
+  {
+    maxWidth: 170
+  }
+);
+
+doc.setFont("helvetica", "normal");
+
+doc.text(
+  "LOCADOR(A):",
+  20,
+  85
+);
+
+doc.setFont("helvetica", "bold");
+
+doc.text(
+  locador,
+  20,
+  95,
+  {
+    maxWidth: 170
+  }
+);
 
     doc.setFont("helvetica", "normal");
 
     doc.text(
       "ENDEREÇO DO IMÓVEL LOCADO:",
       20,
-      90
+      120
     );
 
     doc.text(
       endereco,
       20,
-      100,
+      130,
       {
         maxWidth: 170
       }
@@ -714,9 +722,9 @@
 
     doc.line(
       20,
-      108,
+      138,
       190,
-      108
+      138
     );
 
     const texto = `
@@ -729,7 +737,7 @@ referente ao mês de ${mesReferencia}.
     doc.text(
       texto,
       20,
-      125,
+      155,
       {
         maxWidth:170
       }

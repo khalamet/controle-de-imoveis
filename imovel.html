@@ -113,6 +113,10 @@
       background:#0f172a;
     }
 
+    .upload{
+      background:#2563eb;
+    }
+
     .status{
 
       margin-top:25px;
@@ -122,6 +126,19 @@
 
     #camposAluguel{
       display:none;
+    }
+
+    .linkContrato{
+
+      display:inline-block;
+
+      margin-top:12px;
+
+      color:#2563eb;
+
+      text-decoration:none;
+
+      font-weight:bold;
     }
 
   </style>
@@ -219,6 +236,27 @@
 
     </div>
 
+    <div class="campo">
+
+      <label>Contrato de aluguel</label>
+
+      <input
+        type="file"
+        id="contratoArquivo">
+
+      <button
+        class="upload"
+        style="margin-top:12px"
+        onclick="uploadContrato()">
+
+        Upload contrato
+
+      </button>
+
+      <div id="contratoAtual"></div>
+
+    </div>
+
   </div>
 
   <div class="botoes">
@@ -257,7 +295,7 @@
     "https://xkiswuhpgbifjshjmuvf.supabase.co";
 
   const SUPABASE_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraXN3dWhwZ2JpZmpzaGptdXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODk4OTksImV4cCI6MjA5NDU2NTg5OX0.MfDgb2Ie-iuHtaSHOvI1w_lL8B5yqlSujJL-PMKhKGg";
+    "SUA_ANON_KEY_AQUI";
 
   const supabaseClient =
     supabase.createClient(
@@ -337,7 +375,88 @@
     document.getElementById("inquilino")
     .value = data.inquilino || "";
 
+    if(data.contrato_url){
+
+      document.getElementById("contratoAtual")
+      .innerHTML = `
+
+        <a
+          class="linkContrato"
+          href="${data.contrato_url}"
+          target="_blank">
+
+          Ver contrato atual
+
+        </a>
+
+      `;
+    }
+
     toggleAluguel();
+  }
+
+  async function uploadContrato(){
+
+    const arquivo =
+      document.getElementById("contratoArquivo")
+      .files[0];
+
+    if(!arquivo){
+
+      alert("Selecione um arquivo.");
+      return;
+    }
+
+    const nomeArquivo =
+      slug + "-" + Date.now() + "-" +
+      arquivo.name;
+
+    const { error: uploadError } =
+      await supabaseClient
+      .storage
+      .from("contratos")
+      .upload(nomeArquivo, arquivo);
+
+    if(uploadError){
+
+      alert("Erro ao enviar contrato.");
+      return;
+    }
+
+    const { data } =
+      supabaseClient
+      .storage
+      .from("contratos")
+      .getPublicUrl(nomeArquivo);
+
+    const contratoUrl =
+      data.publicUrl;
+
+    await supabaseClient
+      .from("imoveis")
+      .update({
+
+        contrato_url:
+        contratoUrl
+
+      })
+      .eq("id", imovelId);
+
+    document.getElementById("contratoAtual")
+    .innerHTML = `
+
+      <a
+        class="linkContrato"
+        href="${contratoUrl}"
+        target="_blank">
+
+        Ver contrato atual
+
+      </a>
+
+    `;
+
+    alert("Contrato enviado com sucesso.");
   }
 
   async function salvar(){

@@ -255,6 +255,15 @@
 
       <div id="contratoAtual"></div>
 
+<button
+  class="voltar"
+  style="margin-top:12px;background:#dc2626"
+  onclick="removerContrato()">
+
+  Remover contrato
+
+</button>
+
     </div>
 
   </div>
@@ -459,6 +468,61 @@
     alert("Contrato enviado com sucesso.");
   }
 
+  async function removerContrato(){
+
+  const confirmar =
+    confirm("Deseja remover o contrato atual?");
+
+  if(!confirmar){
+    return;
+  }
+
+  const { data: imovel } =
+    await supabaseClient
+    .from("imoveis")
+    .select("contrato_url")
+    .eq("id", imovelId)
+    .single();
+
+  if(!imovel.contrato_url){
+
+    alert("Nenhum contrato encontrado.");
+    return;
+  }
+
+  const partes =
+    imovel.contrato_url.split("/");
+
+  const nomeArquivo =
+    partes[partes.length - 1];
+
+  const { error: removeError } =
+    await supabaseClient
+    .storage
+    .from("contratos")
+    .remove([nomeArquivo]);
+
+  if(removeError){
+
+    alert("Erro ao remover contrato.");
+    return;
+  }
+
+  await supabaseClient
+    .from("imoveis")
+    .update({
+
+      contrato_url: null
+
+    })
+    .eq("id", imovelId);
+
+  document.getElementById("contratoAtual")
+  .innerHTML = "";
+
+  alert("Contrato removido com sucesso.");
+}
+  
   async function salvar(){
 
     const alugado =

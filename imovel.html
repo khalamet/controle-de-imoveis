@@ -363,12 +363,19 @@
 
     if(error){
 
-      document.getElementById("titulo")
-      .innerText =
-      "Erro ao carregar imóvel";
+  console.log(error);
 
-      return;
-    }
+  alert(
+    "Erro ao carregar imóvel: " +
+    JSON.stringify(error)
+  );
+
+  document.getElementById("titulo")
+  .innerText =
+  "Erro ao carregar imóvel";
+
+  return;
+}
 
     imovelId = data.id;
 

@@ -363,19 +363,19 @@
 
     if(error){
 
-  console.log(error);
+      console.log(error);
 
-  alert(
-    "Erro ao carregar imóvel: " +
-    JSON.stringify(error)
-  );
+      alert(
+        "Erro ao carregar imóvel: " +
+        JSON.stringify(error)
+      );
 
-  document.getElementById("titulo")
-  .innerText =
-  "Erro ao carregar imóvel";
+      document.getElementById("titulo")
+      .innerText =
+      "Erro ao carregar imóvel";
 
-  return;
-}
+      return;
+    }
 
     imovelId = data.id;
 
@@ -665,56 +665,66 @@
 
     doc.setFont("helvetica", "normal");
 
+    doc.text(
+      "LOCATÁRIO(A):",
+      20,
+      85
+    );
+
+    doc.setFont("helvetica", "bold");
+
+    const textoInquilino =
+      doc.splitTextToSize(
+        inquilino || "Não informado",
+        170
+      );
+
+    doc.text(
+      textoInquilino,
+      20,
+      95
+    );
+
+    const alturaInquilino =
+      textoInquilino.length * 8;
+
     doc.setFont("helvetica", "normal");
 
-doc.text(
-  "LOCATÁRIO(A):",
-  20,
-  55
-);
+    doc.text(
+      "LOCADOR(A):",
+      20,
+      110 + alturaInquilino
+    );
 
-doc.setFont("helvetica", "bold");
+    doc.setFont("helvetica", "bold");
 
-doc.text(
-  inquilino || "Não informado",
-  20,
-  65,
-  {
-    maxWidth: 170
-  }
-);
+    const textoLocador =
+      doc.splitTextToSize(
+        locador,
+        170
+      );
 
-doc.setFont("helvetica", "normal");
+    doc.text(
+      textoLocador,
+      20,
+      120 + alturaInquilino
+    );
 
-doc.text(
-  "LOCADOR(A):",
-  20,
-  85
-);
-
-doc.setFont("helvetica", "bold");
-
-doc.text(
-  locador,
-  20,
-  95,
-  {
-    maxWidth: 170
-  }
-);
+    const alturaLocador =
+      textoLocador.length * 8;
 
     doc.setFont("helvetica", "normal");
 
     doc.text(
       "ENDEREÇO DO IMÓVEL LOCADO:",
       20,
-      120
+      145 + alturaInquilino + alturaLocador
     );
 
     doc.text(
       endereco,
       20,
-      130,
+      155 + alturaInquilino + alturaLocador,
       {
         maxWidth: 170
       }
@@ -722,9 +732,9 @@ doc.text(
 
     doc.line(
       20,
-      138,
+      165 + alturaInquilino + alturaLocador,
       190,
-      138
+      165 + alturaInquilino + alturaLocador
     );
 
     const texto = `
@@ -737,7 +747,7 @@ referente ao mês de ${mesReferencia}.
     doc.text(
       texto,
       20,
-      155,
+      185 + alturaInquilino + alturaLocador,
       {
         maxWidth:170
       }
@@ -746,20 +756,20 @@ referente ao mês de ${mesReferencia}.
     doc.text(
       "Locador:",
       130,
-      170
+      235 + alturaInquilino + alturaLocador
     );
 
     doc.line(
       130,
-      185,
+      245 + alturaInquilino + alturaLocador,
       190,
-      185
+      245 + alturaInquilino + alturaLocador
     );
 
     doc.text(
       "Rio de Janeiro/RJ, " + dataFormatada,
       20,
-      210
+      265 + alturaInquilino + alturaLocador
     );
 
     doc.save(

@@ -421,25 +421,28 @@
     }
 
     const extensao =
-  arquivo.name.split(".").pop();
+      arquivo.name.split(".").pop();
 
-const nomeSemAcento =
-  arquivo.name
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    const nomeSemAcento =
+      arquivo.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
 
-const nomeSeguro =
-  nomeSemAcento
-    .replace(/[^a-zA-Z0-9]/g, "_");
+    const nomeSeguro =
+      nomeSemAcento
+        .replace(/[^a-zA-Z0-9]/g, "_");
 
-const nomeArquivo =
-  slug +
-  "-" +
-  Date.now() +
-  "-" +
-  nomeSeguro +
-  "." +
-  extensao;
+    const nomeFinal =
+      nomeSeguro.replace(/_pdf$/i, "");
+
+    const nomeArquivo =
+      slug +
+      "-" +
+      Date.now() +
+      "-" +
+      nomeFinal +
+      "." +
+      extensao;
 
     const { error: uploadError } =
       await supabaseClient

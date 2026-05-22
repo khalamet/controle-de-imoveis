@@ -117,6 +117,10 @@
       background:#2563eb;
     }
 
+    .remover{
+      background:#dc2626;
+    }
+
     .status{
 
       margin-top:25px;
@@ -255,14 +259,14 @@
 
       <div id="contratoAtual"></div>
 
-<button
-  class="voltar"
-  style="margin-top:12px;background:#dc2626"
-  onclick="removerContrato()">
+      <button
+        class="remover"
+        style="margin-top:15px"
+        onclick="removerContrato()">
 
-  Remover contrato
+        Remover contrato
 
-</button>
+      </button>
 
     </div>
 
@@ -416,23 +420,31 @@
       return;
     }
 
-    const nomeLimpo =
-  arquivo.name
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9.-]/g, "_");
+    const extensao =
+      arquivo.name.split(".").pop();
 
-const nomeArquivo =
-  slug + "-" + Date.now() + "-" +
-  nomeLimpo;
+    const nomeArquivo =
+      slug +
+      "-" +
+      Date.now() +
+      "." +
+      extensao;
 
     const { error: uploadError } =
       await supabaseClient
       .storage
       .from("contratos")
-      .upload(nomeArquivo, arquivo);
+      .upload(
+        nomeArquivo,
+        arquivo,
+        {
+          upsert: true
+        }
+      );
 
     if(uploadError){
+
+      console.log(uploadError);
 
       alert("Erro ao enviar contrato.");
       return;
@@ -476,59 +488,59 @@ const nomeArquivo =
 
   async function removerContrato(){
 
-  const confirmar =
-    confirm("Deseja remover o contrato atual?");
+    const confirmar =
+      confirm("Deseja remover o contrato atual?");
 
-  if(!confirmar){
-    return;
-  }
+    if(!confirmar){
+      return;
+    }
 
-  const { data: imovel } =
+    const { data: imovel } =
+      await supabaseClient
+      .from("imoveis")
+      .select("contrato_url")
+      .eq("id", imovelId)
+      .single();
+
+    if(!imovel.contrato_url){
+
+      alert("Nenhum contrato encontrado.");
+      return;
+    }
+
+    const partes =
+      imovel.contrato_url.split("/");
+
+    const nomeArquivo =
+      partes[partes.length - 1];
+
+    const { error: removeError } =
+      await supabaseClient
+      .storage
+      .from("contratos")
+      .remove([nomeArquivo]);
+
+    if(removeError){
+
+      alert("Erro ao remover contrato.");
+      return;
+    }
+
     await supabaseClient
-    .from("imoveis")
-    .select("contrato_url")
-    .eq("id", imovelId)
-    .single();
+      .from("imoveis")
+      .update({
 
-  if(!imovel.contrato_url){
+        contrato_url: null
 
-    alert("Nenhum contrato encontrado.");
-    return;
+      })
+      .eq("id", imovelId);
+
+    document.getElementById("contratoAtual")
+    .innerHTML = "";
+
+    alert("Contrato removido com sucesso.");
   }
 
-  const partes =
-    imovel.contrato_url.split("/");
-
-  const nomeArquivo =
-    partes[partes.length - 1];
-
-  const { error: removeError } =
-    await supabaseClient
-    .storage
-    .from("contratos")
-    .remove([nomeArquivo]);
-
-  if(removeError){
-
-    alert("Erro ao remover contrato.");
-    return;
-  }
-
-  await supabaseClient
-    .from("imoveis")
-    .update({
-
-      contrato_url: null
-
-    })
-    .eq("id", imovelId);
-
-  document.getElementById("contratoAtual")
-  .innerHTML = "";
-
-  alert("Contrato removido com sucesso.");
-}
-  
   async function salvar(){
 
     const alugado =
@@ -567,6 +579,8 @@ const nomeArquivo =
       .eq("id", imovelId);
 
     if(error){
+
+      console.log(error);
 
       document.getElementById("status")
       .innerText =

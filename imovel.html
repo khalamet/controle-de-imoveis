@@ -9,6 +9,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <style>
 
     *{
@@ -272,6 +274,15 @@
 
   </div>
 
+  <button
+  class="upload"
+  style="margin-top:20px"
+  onclick="emitirRecibo()">
+
+  Emitir recibo PDF
+
+</button>
+  
   <div class="botoes">
 
     <button
@@ -608,6 +619,191 @@
     "Alterações salvas com sucesso.";
   }
 
+  async function emitirRecibo(){
+
+  const mesReferencia =
+    prompt("Mês de referência (ex: Maio 2026)");
+
+  if(!mesReferencia){
+    return;
+  }
+
+  const valorRecebido =
+    prompt("Valor recebido");
+
+  if(!valorRecebido){
+    return;
+  }
+
+  const locador =
+    prompt("Nome do locador");
+
+  if(!locador){
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+
+  const doc = new jsPDF();
+
+  const endereco =
+    document.getElementById("endereco").value;
+
+  const inquilino =
+    document.getElementById("inquilino").value;
+
+  const hoje = new Date();
+
+  const dataFormatada =
+    hoje.toLocaleDateString("pt-BR", {
+
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+
+    });
+
+  doc.setFont("helvetica");
+
+  doc.setFontSize(20);
+
+  doc.text(
+    "RECIBO DE ALUGUEL",
+    105,
+    25,
+    { align: "center" }
+  );
+
+  doc.setFontSize(12);
+
+  doc.text(
+    "Total recebido",
+    160,
+    20
+  );
+
+  doc.setFontSize(16);
+
+  doc.text(
+    "R$ " + valorRecebido,
+    160,
+    28
+  );
+
+  doc.setFontSize(14);
+
+  doc.text(
+    "MÊS DE REFERÊNCIA:",
+    20,
+    55
+  );
+
+  doc.setFont("helvetica", "bold");
+
+  doc.text(
+    mesReferencia,
+    20,
+    65
+  );
+
+  doc.setFont("helvetica", "normal");
+
+  doc.text(
+    "LOCATÁRIO(A):",
+    80,
+    55
+  );
+
+  doc.setFont("helvetica", "bold");
+
+  doc.text(
+    inquilino || "Não informado",
+    80,
+    65
+  );
+
+  doc.setFont("helvetica", "normal");
+
+  doc.text(
+    "LOCADOR(A):",
+    145,
+    55
+  );
+
+  doc.setFont("helvetica", "bold");
+
+  doc.text(
+    locador,
+    145,
+    65
+  );
+
+  doc.setFont("helvetica", "normal");
+
+  doc.text(
+    "ENDEREÇO DO IMÓVEL LOCADO:",
+    20,
+    90
+  );
+
+  doc.text(
+    endereco,
+    20,
+    100,
+    {
+      maxWidth: 170
+    }
+  );
+
+  doc.line(
+    20,
+    108,
+    190,
+    108
+  );
+
+  const texto = `
+Recebi de ${inquilino}
+a quantia de R$ ${valorRecebido}
+como pagamento do aluguel do imóvel mencionado acima,
+referente ao mês de ${mesReferencia}.
+  `;
+
+  doc.text(
+    texto,
+    20,
+    125,
+    {
+      maxWidth:170
+    }
+  );
+
+  doc.text(
+    "Recebido por:",
+    130,
+    170
+  );
+
+  doc.line(
+    130,
+    185,
+    190,
+    185
+  );
+
+  doc.text(
+    "Rio de Janeiro/RJ, " + dataFormatada,
+    20,
+    210
+  );
+
+  doc.save(
+    "recibo-" +
+    slug +
+    ".pdf"
+  );
+}
+  
   function voltar(){
 
     window.location.href =

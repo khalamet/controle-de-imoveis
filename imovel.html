@@ -296,6 +296,15 @@
       class="voltar"
       onclick="voltar()">
 
+      <button
+  class="upload"
+  style="margin-top:12px;background:#7c3aed"
+  onclick="abrirCarneLeao()">
+
+  Abrir Meu Carnê-Leão
+
+</button>
+      
       Voltar
     </button>
 
@@ -832,6 +841,48 @@ referente ao mês de ${mesReferencia}.
     "Alterações salvas com sucesso.";
   }
 
+  function abrirCarneLeao(){
+
+  const nome =
+    document.getElementById("nome").value;
+
+  const inquilino =
+    document.getElementById("inquilino").value || "Não informado";
+
+  const aluguel =
+    document.getElementById("valor_aluguel").value || "Não informado";
+
+  const ultimoPagamento =
+    document.getElementById("ultimo_pagamento").value || "Não informado";
+
+  const mensagem =
+`Confira os dados antes de abrir o Carnê-Leão:
+
+Imóvel:
+${nome}
+
+Inquilino:
+${inquilino}
+
+Valor do aluguel:
+R$ ${aluguel}
+
+Último pagamento:
+${ultimoPagamento}
+
+Deseja abrir o Meu Carnê-Leão?`;
+
+  if(confirm(mensagem)){
+
+    window.open(
+      "https://www.gov.br/pt-br/servicos/apurar-carne-leao",
+      "_blank"
+    );
+
+  }
+
+}
+  
   function voltar(){
 
     window.location.href =

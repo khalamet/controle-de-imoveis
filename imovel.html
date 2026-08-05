@@ -2,13 +2,11 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Detalhes do Imóvel</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
@@ -26,20 +24,12 @@
     }
 
     .box{
-
       background:white;
-
       max-width:900px;
-
       margin:auto;
-
       padding:40px;
-
       border-radius:20px;
-
-      box-shadow:
-        0 10px 25px rgba(0,0,0,0.08);
-
+      box-shadow:0 10px 25px rgba(0,0,0,0.08);
     }
 
     h1{
@@ -53,28 +43,19 @@
     }
 
     .campo label{
-
       display:block;
-
       margin-bottom:8px;
-
       font-weight:bold;
-
       color:#334155;
     }
 
     .campo input,
     .campo textarea,
     .campo select{
-
       width:100%;
-
       padding:14px;
-
       border-radius:12px;
-
       border:1px solid #cbd5e1;
-
       font-size:16px;
     }
 
@@ -84,26 +65,23 @@
     }
 
     .botoes{
-
       display:flex;
-
       gap:15px;
-
       margin-top:35px;
+      flex-wrap:wrap;
+    }
+
+    .botoes button{
+      flex:1;
+      min-width:160px;
     }
 
     button{
-
       padding:14px 22px;
-
       border:none;
-
       border-radius:12px;
-
       color:white;
-
       font-size:16px;
-
       cursor:pointer;
     }
 
@@ -123,10 +101,12 @@
       background:#dc2626;
     }
 
+    .carneleao{
+      background:#7c3aed;
+    }
+
     .status{
-
       margin-top:25px;
-
       font-weight:bold;
     }
 
@@ -135,15 +115,10 @@
     }
 
     .linkContrato{
-
       display:inline-block;
-
       margin-top:12px;
-
       color:#2563eb;
-
       text-decoration:none;
-
       font-weight:bold;
     }
 
@@ -153,110 +128,62 @@
 
 <div class="box">
 
-  <h1 id="titulo">
-    Carregando...
-  </h1>
+  <h1 id="titulo">Carregando...</h1>
 
   <div class="campo">
-
     <label>Nome do imóvel</label>
-
-    <input
-      type="text"
-      id="nome">
-
+    <input type="text" id="nome">
   </div>
 
   <div class="campo">
-
     <label>Endereço</label>
-
     <textarea id="endereco"></textarea>
-
   </div>
 
   <div class="campo">
-
     <label>Matrícula RGI</label>
-
-    <input
-      type="text"
-      id="rgi">
-
+    <input type="text" id="rgi">
   </div>
 
   <div class="campo">
-
     <label>Matrícula IPTU</label>
-
-    <input
-      type="text"
-      id="iptu">
-
+    <input type="text" id="iptu">
   </div>
 
   <div class="campo">
-
     <label>Alugado?</label>
-
-    <select
-      id="alugado"
-      onchange="toggleAluguel()">
-
+    <select id="alugado" onchange="toggleAluguel()">
       <option value="nao">Não</option>
       <option value="sim">Sim</option>
-
     </select>
-
   </div>
 
   <div id="camposAluguel">
 
     <div class="campo">
-
       <label>Valor do aluguel</label>
-
-      <input
-        type="text"
-        id="valor_aluguel">
-
+      <input type="text" id="valor_aluguel">
     </div>
 
     <div class="campo">
-
       <label>Último pagamento</label>
-
-      <input
-        type="date"
-        id="ultimo_pagamento">
-
+      <input type="date" id="ultimo_pagamento">
     </div>
 
     <div class="campo">
-
       <label>Inquilino atual</label>
-
-      <input
-        type="text"
-        id="inquilino">
-
+      <input type="text" id="inquilino">
     </div>
 
     <div class="campo">
-
       <label>Contrato de aluguel</label>
-
-      <input
-        type="file"
-        id="contratoArquivo">
+      <input type="file" id="contratoArquivo">
 
       <button
         class="upload"
         style="margin-top:12px"
         onclick="uploadContrato()">
-
         Upload contrato
-
       </button>
 
       <div id="contratoAtual"></div>
@@ -265,21 +192,9 @@
         class="remover"
         style="margin-top:15px"
         onclick="removerContrato()">
-
         Remover contrato
-
       </button>
-
     </div>
-
-    <button
-      class="upload"
-      style="margin-top:20px"
-      onclick="emitirRecibo()">
-
-      Emitir recibo PDF
-
-    </button>
 
   </div>
 
@@ -293,12 +208,14 @@
 
     <button
       class="upload"
+      id="btnRecibo"
       onclick="emitirRecibo()">
       Emitir recibo PDF
     </button>
 
     <button
-      style="background:#7c3aed;"
+      class="carneleao"
+      id="btnCarneLeao"
       onclick="abrirCarneLeao()">
       Meu Carnê-Leão
     </button>
@@ -309,19 +226,15 @@
       Voltar
     </button>
 
-</div>
-
-  <div
-    class="status"
-    id="status">
   </div>
+
+  <div class="status" id="status"></div>
 
 </div>
 
 <script>
 
   if(localStorage.getItem("logado") !== "sim"){
-
     window.location.href = "index.html";
   }
 
@@ -352,13 +265,23 @@
     const campos =
       document.getElementById("camposAluguel");
 
+    const btnRecibo =
+      document.getElementById("btnRecibo");
+
+    const btnCarneLeao =
+      document.getElementById("btnCarneLeao");
+
     if(alugado === "sim"){
 
       campos.style.display = "block";
+      btnRecibo.style.display = "block";
+      btnCarneLeao.style.display = "block";
 
     }else{
 
       campos.style.display = "none";
+      btnRecibo.style.display = "none";
+      btnCarneLeao.style.display = "none";
     }
   }
 
@@ -420,16 +343,12 @@
 
       document.getElementById("contratoAtual")
       .innerHTML = `
-
         <a
           class="linkContrato"
           href="${data.contrato_url}"
           target="_blank">
-
           Ver contrato atual
-
         </a>
-
       `;
     }
 
@@ -443,7 +362,6 @@
       .files[0];
 
     if(!arquivo){
-
       alert("Selecione um arquivo.");
       return;
     }
@@ -485,9 +403,7 @@
       );
 
     if(uploadError){
-
       console.log(uploadError);
-
       alert("Erro ao enviar contrato.");
       return;
     }
@@ -504,25 +420,18 @@
     await supabaseClient
       .from("imoveis")
       .update({
-
-        contrato_url:
-        contratoUrl
-
+        contrato_url: contratoUrl
       })
       .eq("id", imovelId);
 
     document.getElementById("contratoAtual")
     .innerHTML = `
-
       <a
         class="linkContrato"
         href="${contratoUrl}"
         target="_blank">
-
         Ver contrato atual
-
       </a>
-
     `;
 
     alert("Contrato enviado com sucesso.");
@@ -545,7 +454,6 @@
       .single();
 
     if(!imovel.contrato_url){
-
       alert("Nenhum contrato encontrado.");
       return;
     }
@@ -563,7 +471,6 @@
       .remove([nomeArquivo]);
 
     if(removeError){
-
       alert("Erro ao remover contrato.");
       return;
     }
@@ -571,9 +478,7 @@
     await supabaseClient
       .from("imoveis")
       .update({
-
         contrato_url: null
-
       })
       .eq("id", imovelId);
 
@@ -623,11 +528,9 @@
 
     const dataFormatada =
       hoje.toLocaleDateString("pt-BR", {
-
         day: "2-digit",
         month: "long",
         year: "numeric"
-
       });
 
     doc.setFont("helvetica");
@@ -642,44 +545,19 @@
     );
 
     doc.setFontSize(12);
-
-    doc.text(
-      "Total recebido",
-      160,
-      20
-    );
+    doc.text("Total recebido", 160, 20);
 
     doc.setFontSize(16);
-
-    doc.text(
-      "R$ " + valorRecebido,
-      160,
-      28
-    );
+    doc.text("R$ " + valorRecebido, 160, 28);
 
     doc.setFontSize(14);
-
-    doc.text(
-      "MÊS DE REFERÊNCIA:",
-      20,
-      55
-    );
+    doc.text("MÊS DE REFERÊNCIA:", 20, 55);
 
     doc.setFont("helvetica", "bold");
-
-    doc.text(
-      mesReferencia,
-      20,
-      65
-    );
+    doc.text(mesReferencia, 20, 65);
 
     doc.setFont("helvetica", "normal");
-
-    doc.text(
-      "LOCATÁRIO(A):",
-      20,
-      85
-    );
+    doc.text("LOCATÁRIO(A):", 20, 85);
 
     doc.setFont("helvetica", "bold");
 
@@ -689,36 +567,20 @@
         170
       );
 
-    doc.text(
-      textoInquilino,
-      20,
-      95
-    );
+    doc.text(textoInquilino, 20, 95);
 
     const alturaInquilino =
       textoInquilino.length * 8;
 
     doc.setFont("helvetica", "normal");
-
-    doc.text(
-      "LOCADOR(A):",
-      20,
-      110 + alturaInquilino
-    );
+    doc.text("LOCADOR(A):", 20, 110 + alturaInquilino);
 
     doc.setFont("helvetica", "bold");
 
     const textoLocador =
-      doc.splitTextToSize(
-        locador,
-        170
-      );
+      doc.splitTextToSize(locador, 170);
 
-    doc.text(
-      textoLocador,
-      20,
-      120 + alturaInquilino
-    );
+    doc.text(textoLocador, 20, 120 + alturaInquilino);
 
     const alturaLocador =
       textoLocador.length * 8;
@@ -735,9 +597,7 @@
       endereco,
       20,
       155 + alturaInquilino + alturaLocador,
-      {
-        maxWidth: 170
-      }
+      { maxWidth: 170 }
     );
 
     doc.line(
@@ -747,20 +607,13 @@
       165 + alturaInquilino + alturaLocador
     );
 
-    const texto = `
-Recebi de ${inquilino}
-a quantia de R$ ${valorRecebido}
-como pagamento do aluguel do imóvel mencionado acima,
-referente ao mês de ${mesReferencia}.
-    `;
+    const texto = `Recebi de ${inquilino} a quantia de R$ ${valorRecebido} como pagamento do aluguel do imóvel mencionado acima, referente ao mês de ${mesReferencia}.`;
 
     doc.text(
       texto,
       20,
       185 + alturaInquilino + alturaLocador,
-      {
-        maxWidth:170
-      }
+      { maxWidth: 170 }
     );
 
     doc.text(
@@ -782,11 +635,42 @@ referente ao mês de ${mesReferencia}.
       265 + alturaInquilino + alturaLocador
     );
 
-    doc.save(
-      "recibo-" +
-      slug +
-      ".pdf"
-    );
+    doc.save("recibo-" + slug + ".pdf");
+  }
+
+  function abrirCarneLeao(){
+
+    const nome =
+      document.getElementById("nome").value;
+
+    const inquilino =
+      document.getElementById("inquilino").value ||
+      "Não informado";
+
+    const aluguel =
+      document.getElementById("valor_aluguel").value ||
+      "Não informado";
+
+    const ultimoPagamento =
+      document.getElementById("ultimo_pagamento").value ||
+      "Não informado";
+
+    const mensagem =
+`Confira os dados antes de abrir o Carnê-Leão:
+
+Imóvel: ${nome}
+Inquilino: ${inquilino}
+Valor do aluguel: R$ ${aluguel}
+Último pagamento: ${ultimoPagamento}
+
+Deseja abrir o Meu Carnê-Leão?`;
+
+    if(confirm(mensagem)){
+      window.open(
+        "https://www.gov.br/pt-br/servicos/apurar-carne-leao",
+        "_blank"
+      );
+    }
   }
 
   async function salvar(){
@@ -798,96 +682,30 @@ referente ao mês de ${mesReferencia}.
       await supabaseClient
       .from("imoveis")
       .update({
-
-        nome:
-        document.getElementById("nome").value,
-
-        endereco:
-        document.getElementById("endereco").value,
-
-        rgi:
-        document.getElementById("rgi").value,
-
-        iptu:
-        document.getElementById("iptu").value,
-
-        alugado:
-        alugado,
-
-        valor_aluguel:
-        document.getElementById("valor_aluguel").value,
-
-        ultimo_pagamento:
-        document.getElementById("ultimo_pagamento").value || null,
-
-        inquilino:
-        document.getElementById("inquilino").value
-
+        nome: document.getElementById("nome").value,
+        endereco: document.getElementById("endereco").value,
+        rgi: document.getElementById("rgi").value,
+        iptu: document.getElementById("iptu").value,
+        alugado: alugado,
+        valor_aluguel: document.getElementById("valor_aluguel").value,
+        ultimo_pagamento: document.getElementById("ultimo_pagamento").value || null,
+        inquilino: document.getElementById("inquilino").value
       })
       .eq("id", imovelId);
 
     if(error){
-
       console.log(error);
-
       document.getElementById("status")
-      .innerText =
-      "Erro ao salvar.";
-
+      .innerText = "Erro ao salvar.";
       return;
     }
 
     document.getElementById("status")
-    .innerText =
-    "Alterações salvas com sucesso.";
+    .innerText = "Alterações salvas com sucesso.";
   }
 
-  function abrirCarneLeao(){
-
-  const nome =
-    document.getElementById("nome").value;
-
-  const inquilino =
-    document.getElementById("inquilino").value || "Não informado";
-
-  const aluguel =
-    document.getElementById("valor_aluguel").value || "Não informado";
-
-  const ultimoPagamento =
-    document.getElementById("ultimo_pagamento").value || "Não informado";
-
-  const mensagem =
-`Confira os dados antes de abrir o Carnê-Leão:
-
-Imóvel:
-${nome}
-
-Inquilino:
-${inquilino}
-
-Valor do aluguel:
-R$ ${aluguel}
-
-Último pagamento:
-${ultimoPagamento}
-
-Deseja abrir o Meu Carnê-Leão?`;
-
-  if(confirm(mensagem)){
-
-    window.open(
-      "https://www.gov.br/pt-br/servicos/apurar-carne-leao",
-      "_blank"
-    );
-
-  }
-
-}
-  
   function voltar(){
-
-    window.location.href =
-      "painel.html";
+    window.location.href = "painel.html";
   }
 
   carregarImovel();

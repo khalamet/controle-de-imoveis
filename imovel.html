@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Detalhes do Imóvel</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
+    body{
+      background:#f1f5f9;
+      padding:40px;
+    }
+
+    .box{
+      background:white;
+      max-width:900px;
+      margin:auto;
+      padding:40px;
+      border-radius:20px;
+      box-shadow:0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    h1{
+      margin-bottom:35px;
+      color:#0f172a;
+      font-size:36px;
+    }
+
+    .campo{
+      margin-bottom:25px;
+    }
+
+    .campo label{
+      display:block;
+      margin-bottom:8px;
+      font-weight:bold;
+      color:#334155;
+    }
+
+    .campo input,
+    .campo textarea,
+    .campo select{
+      width:100%;
+      padding:14px;
+      border-radius:12px;
+      border:1px solid #cbd5e1;
+      font-size:16px;
+    }
+
+    textarea{
+      min-height:120px;
+      resize:vertical;
+    }
+
+    .botoes{
+      display:flex;
+      gap:15px;
+      margin-top:35px;
+      flex-wrap:wrap;
+    }
+
+    .botoes button{
+      flex:1;
+      min-width:160px;
+    }
+
+    button{
+      padding:14px 22px;
+      border:none;
+      border-radius:12px;
+      color:white;
+      font-size:16px;
+      cursor:pointer;
+    }
+
+    .salvar{
+      background:#16a34a;
+    }
+
+    .voltar{
+      background:#0f172a;
+    }
+
+    .upload{
+      background:#2563eb;
+    }
+
+    .remover{
+      background:#dc2626;
+    }
+
+    .carneleao{
+      background:#7c3aed;
+    }
+
+    .status{
+      margin-top:25px;
+      font-weight:bold;
+    }
+
+    #camposAluguel{
+      display:none;
+    }
+
+    .linkContrato{
+      display:inline-block;
+      margin-top:12px;
+      color:#2563eb;
+      text-decoration:none;
+      font-weight:bold;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="box">
+
+  <h1 id="titulo">Carregando...</h1>
+
+  <div class="campo">
+    <label>Nome do imóvel</label>
+    <input type="text" id="nome">
+  </div>
+
+  <div class="campo">
+    <label>Endereço</label>
+    <textarea id="endereco"></textarea>
+  </div>
+
+  <div class="campo">
+    <label>Matrícula RGI</label>
+    <input type="text" id="rgi">
+  </div>
+
+  <div class="campo">
+    <label>Matrícula IPTU</label>
+    <input type="text" id="iptu">
+  </div>
+
+  <div class="campo">
+    <label>Alugado?</label>
+    <select id="alugado" onchange="toggleAluguel()">
+      <option value="nao">Não</option>
+      <option value="sim">Sim</option>
+    </select>
+  </div>
+
+  <div id="camposAluguel">
+
+    <div class="campo">
+      <label>Valor do aluguel</label>
+      <input type="text" id="valor_aluguel">
+    </div>
+
+    <div class="campo">
+      <label>Último pagamento</label>
+      <input type="date" id="ultimo_pagamento">
+    </div>
+
+    <div class="campo">
+      <label>Inquilino atual</label>
+      <input type="text" id="inquilino">
+    </div>
+
+    <div class="campo">
+      <label>Contrato de aluguel</label>
+      <input type="file" id="contratoArquivo">
+
+      <button
+        class="upload"
+        style="margin-top:12px"
+        onclick="uploadContrato()">
+        Upload contrato
+      </button>
+
+      <div id="contratoAtual"></div>
+
+      <button
+        class="remover"
+        style="margin-top:15px"
+        onclick="removerContrato()">
+        Remover contrato
+      </button>
+    </div>
+
+  </div>
+
+  <div class="botoes">
+
+    <button
+      class="salvar"
+      onclick="salvar()">
+      Salvar
+    </button>
+
+    <button
+      class="upload"
+      id="btnRecibo"
+      onclick="emitirRecibo()">
+      Emitir recibo PDF
+    </button>
+
+    <button
+      class="carneleao"
+      id="btnCarneLeao"
+      onclick="abrirCarneLeao()">
+      Meu Carnê-Leão
+    </button>
+
+    <button
+      class="voltar"
+      onclick="voltar()">
+      Voltar
+    </button>
+
+  </div>
+
+  <div class="status" id="status"></div>
+
+</div>
+
+<script>
+
+  if(localStorage.getItem("logado") !== "sim"){
+    window.location.href = "index.html";
+  }
+
+  const SUPABASE_URL =
+    "https://xkiswuhpgbifjshjmuvf.supabase.co";
+
+  const SUPABASE_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraXN3dWhwZ2JpZmpzaGptdXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODk4OTksImV4cCI6MjA5NDU2NTg5OX0.MfDgb2Ie-iuHtaSHOvI1w_lL8B5yqlSujJL-PMKhKGg";
+
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+  const params =
+    new URLSearchParams(window.location.search);
+
+  const slug = params.get("id");
+
+  let imovelId = null;
+
+  function toggleAluguel(){
+
+    const alugado =
+      document.getElementById("alugado").value;
+
+    const campos =
+      document.getElementById("camposAluguel");
+
+    const btnRecibo =
+      document.getElementById("btnRecibo");
+
+    const btnCarneLeao =
+      document.getElementById("btnCarneLeao");
+
+    if(alugado === "sim"){
+
+      campos.style.display = "block";
+      btnRecibo.style.display = "block";
+      btnCarneLeao.style.display = "block";
+
+    }else{
+
+      campos.style.display = "none";
+      btnRecibo.style.display = "none";
+      btnCarneLeao.style.display = "none";
+    }
+  }
+
+  async function carregarImovel(){
+
+    const { data, error } =
+      await supabaseClient
+      .from("imoveis")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+
+    if(error){
+
+      console.log(error);
+
+      alert(
+        "Erro ao carregar imóvel: " +
+        JSON.stringify(error)
+      );
+
+      document.getElementById("titulo")
+      .innerText =
+      "Erro ao carregar imóvel";
+
+      return;
+    }
+
+    imovelId = data.id;
+
+    document.getElementById("titulo")
+    .innerText = data.nome;
+
+    document.getElementById("nome")
+    .value = data.nome;
+
+    document.getElementById("endereco")
+    .value = data.endereco;
+
+    document.getElementById("rgi")
+    .value = data.rgi;
+
+    document.getElementById("iptu")
+    .value = data.iptu;
+
+    document.getElementById("alugado")
+    .value = data.alugado ? "sim" : "nao";
+
+    document.getElementById("valor_aluguel")
+    .value = data.valor_aluguel || "";
+
+    document.getElementById("ultimo_pagamento")
+    .value = data.ultimo_pagamento || "";
+
+    document.getElementById("inquilino")
+    .value = data.inquilino || "";
+
+    if(data.contrato_url){
+
+      document.getElementById("contratoAtual")
+      .innerHTML = `
+        <a
+          class="linkContrato"
+          href="${data.contrato_url}"
+          target="_blank">
+          Ver contrato atual
+        </a>
+      `;
+    }
+
+    toggleAluguel();
+  }
+
+  async function uploadContrato(){
+
+    const arquivo =
+      document.getElementById("contratoArquivo")
+      .files[0];
+
+    if(!arquivo){
+      alert("Selecione um arquivo.");
+      return;
+    }
+
+    const extensao =
+      arquivo.name.split(".").pop();
+
+    const nomeSemAcento =
+      arquivo.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+    const nomeSeguro =
+      nomeSemAcento
+        .replace(/[^a-zA-Z0-9]/g, "_");
+
+    const nomeFinal =
+      nomeSeguro.replace(/_pdf$/i, "");
+
+    const nomeArquivo =
+      slug +
+      "-" +
+      Date.now() +
+      "-" +
+      nomeFinal +
+      "." +
+      extensao;
+
+    const { error: uploadError } =
+      await supabaseClient
+      .storage
+      .from("contratos")
+      .upload(
+        nomeArquivo,
+        arquivo,
+        {
+          upsert: true
+        }
+      );
+
+    if(uploadError){
+      console.log(uploadError);
+      alert("Erro ao enviar contrato.");
+      return;
+    }
+
+    const { data } =
+      supabaseClient
+      .storage
+      .from("contratos")
+      .getPublicUrl(nomeArquivo);
+
+    const contratoUrl =
+      data.publicUrl;
+
+    await supabaseClient
+      .from("imoveis")
+      .update({
+        contrato_url: contratoUrl
+      })
+      .eq("id", imovelId);
+
+    document.getElementById("contratoAtual")
+    .innerHTML = `
+      <a
+        class="linkContrato"
+        href="${contratoUrl}"
+        target="_blank">
+        Ver contrato atual
+      </a>
+    `;
+
+    alert("Contrato enviado com sucesso.");
+  }
+
+  async function removerContrato(){
+
+    const confirmar =
+      confirm("Deseja remover o contrato atual?");
+
+    if(!confirmar){
+      return;
+    }
+
+    const { data: imovel } =
+      await supabaseClient
+      .from("imoveis")
+      .select("contrato_url")
+      .eq("id", imovelId)
+      .single();
+
+    if(!imovel.contrato_url){
+      alert("Nenhum contrato encontrado.");
+      return;
+    }
+
+    const partes =
+      imovel.contrato_url.split("/");
+
+    const nomeArquivo =
+      partes[partes.length - 1];
+
+    const { error: removeError } =
+      await supabaseClient
+      .storage
+      .from("contratos")
+      .remove([nomeArquivo]);
+
+    if(removeError){
+      alert("Erro ao remover contrato.");
+      return;
+    }
+
+    await supabaseClient
+      .from("imoveis")
+      .update({
+        contrato_url: null
+      })
+      .eq("id", imovelId);
+
+    document.getElementById("contratoAtual")
+    .innerHTML = "";
+
+    alert("Contrato removido com sucesso.");
+  }
+
+  async function emitirRecibo(){
+
+    const mesReferencia =
+      prompt("Mês de referência (ex: Maio 2026)");
+
+    if(!mesReferencia){
+      return;
+    }
+
+    const valorRecebido =
+      prompt("Valor recebido");
+
+    if(!valorRecebido){
+      return;
+    }
+
+    const { data: configData } =
+      await supabaseClient
+      .from("configuracoes")
+      .select("locador")
+      .eq("id", 1)
+      .single();
+
+    const locador =
+      configData.locador;
+
+    const { jsPDF } = window.jspdf;
+
+    const doc = new jsPDF();
+
+    const endereco =
+      document.getElementById("endereco").value;
+
+    const inquilino =
+      document.getElementById("inquilino").value;
+
+    const hoje = new Date();
+
+    const dataFormatada =
+      hoje.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      });
+
+    doc.setFont("helvetica");
+
+    doc.setFontSize(20);
+
+    doc.text(
+      "RECIBO DE ALUGUEL",
+      105,
+      25,
+      { align: "center" }
+    );
+
+    doc.setFontSize(12);
+    doc.text("Total recebido", 160, 20);
+
+    doc.setFontSize(16);
+    doc.text("R$ " + valorRecebido, 160, 28);
+
+    doc.setFontSize(14);
+    doc.text("MÊS DE REFERÊNCIA:", 20, 55);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(mesReferencia, 20, 65);
+
+    doc.setFont("helvetica", "normal");
+    doc.text("LOCATÁRIO(A):", 20, 85);
+
+    doc.setFont("helvetica", "bold");
+
+    const textoInquilino =
+      doc.splitTextToSize(
+        inquilino || "Não informado",
+        170
+      );
+
+    doc.text(textoInquilino, 20, 95);
+
+    const alturaInquilino =
+      textoInquilino.length * 8;
+
+    doc.setFont("helvetica", "normal");
+    doc.text("LOCADOR(A):", 20, 110 + alturaInquilino);
+
+    doc.setFont("helvetica", "bold");
+
+    const textoLocador =
+      doc.splitTextToSize(locador, 170);
+
+    doc.text(textoLocador, 20, 120 + alturaInquilino);
+
+    const alturaLocador =
+      textoLocador.length * 8;
+
+    doc.setFont("helvetica", "normal");
+
+    doc.text(
+      "ENDEREÇO DO IMÓVEL LOCADO:",
+      20,
+      145 + alturaInquilino + alturaLocador
+    );
+
+    doc.text(
+      endereco,
+      20,
+      155 + alturaInquilino + alturaLocador,
+      { maxWidth: 170 }
+    );
+
+    doc.line(
+      20,
+      165 + alturaInquilino + alturaLocador,
+      190,
+      165 + alturaInquilino + alturaLocador
+    );
+
+    const texto = `Recebi de ${inquilino} a quantia de R$ ${valorRecebido} como pagamento do aluguel do imóvel mencionado acima, referente ao mês de ${mesReferencia}.`;
+
+    doc.text(
+      texto,
+      20,
+      185 + alturaInquilino + alturaLocador,
+      { maxWidth: 170 }
+    );
+
+    doc.text(
+      "Locador:",
+      130,
+      235 + alturaInquilino + alturaLocador
+    );
+
+    doc.line(
+      130,
+      245 + alturaInquilino + alturaLocador,
+      190,
+      245 + alturaInquilino + alturaLocador
+    );
+
+    doc.text(
+      "Rio de Janeiro/RJ, " + dataFormatada,
+      20,
+      265 + alturaInquilino + alturaLocador
+    );
+
+    doc.save("recibo-" + slug + ".pdf");
+  }
+
+  function abrirCarneLeao(){
+
+    const nome =
+      document.getElementById("nome").value;
+
+    const inquilino =
+      document.getElementById("inquilino").value ||
+      "Não informado";
+
+    const aluguel =
+      document.getElementById("valor_aluguel").value ||
+      "Não informado";
+
+    const ultimoPagamento =
+      document.getElementById("ultimo_pagamento").value ||
+      "Não informado";
+
+    const mensagem =
+`Confira os dados antes de abrir o Carnê-Leão:
+
+Imóvel: ${nome}
+Inquilino: ${inquilino}
+Valor do aluguel: R$ ${aluguel}
+Último pagamento: ${ultimoPagamento}
+
+Deseja abrir o Meu Carnê-Leão?`;
+
+    if(confirm(mensagem)){
+      window.open(
+        "https://cav.receita.fazenda.gov.br/autenticacao/login/index/10028",
+        "_blank"
+      );
+    }
+  }
+
+  async function salvar(){
+
+    const alugado =
+      document.getElementById("alugado").value === "sim";
+
+    const { error } =
+      await supabaseClient
+      .from("imoveis")
+      .update({
+        nome: document.getElementById("nome").value,
+        endereco: document.getElementById("endereco").value,
+        rgi: document.getElementById("rgi").value,
+        iptu: document.getElementById("iptu").value,
+        alugado: alugado,
+        valor_aluguel: document.getElementById("valor_aluguel").value,
+        ultimo_pagamento: document.getElementById("ultimo_pagamento").value || null,
+        inquilino: document.getElementById("inquilino").value
+      })
+      .eq("id", imovelId);
+
+    if(error){
+      console.log(error);
+      document.getElementById("status")
+      .innerText = "Erro ao salvar.";
+      return;
+    }
+
+    document.getElementById("status")
+    .innerText = "Alterações salvas com sucesso.";
+  }
+
+  function voltar(){
+    window.location.href = "painel.html";
+  }
+
+  carregarImovel();
+
+</script>
+
+</body>
+</html>

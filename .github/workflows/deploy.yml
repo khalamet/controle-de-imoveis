@@ -16,9 +16,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Injetar chave secreta
+        env:
+          CHAVE_BRUTA: ${{ secrets.SUPABASE_KEY }}
         run: |
+          CHAVE=$(printf '%s' "$CHAVE_BRUTA" | tr -d '\r\n[:space:]"')
           find . -type f \( -name "*.html" -o -name "*.js" \) \
-            -exec sed -i "s|__SUPABASE_KEY__|${{ secrets.SUPABASE_KEY }}|g" {} +
+            -exec sed -i "s|__SUPABASE_KEY__|${CHAVE}|g" {} +
 
       - name: Publicar na branch gh-pages
         uses: peaceiris/actions-gh-pages@v3

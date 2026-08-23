@@ -1,0 +1,24 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Injetar chave secreta
+        run: |
+          find . -type f \( -name "*.html" -o -name "*.js" \) \
+            -exec sed -i "s|__SUPABASE_KEY__|${{ secrets.SUPABASE_KEY }}|g" {} +
+
+      - name: Publicar na branch gh-pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./

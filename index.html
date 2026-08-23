@@ -3,229 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Controle de Imóveis</title>
-
+  <title>Login - Controle de Imóveis</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+  
   <style>
-
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Arial,sans-serif;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
     }
 
-    body{
-      height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-
-      background:
-        linear-gradient(
-          rgba(15,23,42,0.55),
-          rgba(15,23,42,0.55)
-        ),
-        url("assets/logo.png");
-
-      background-size:cover;
-      background-position:center;
-      background-repeat:no-repeat;
-
-      overflow:hidden;
+    body {
+      background: #f4f7fa;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
     }
 
-    .login-box{
-
-      width:380px;
-      padding:45px;
-
-      background:rgba(255,255,255,0.08);
-
-      border:1px solid rgba(255,255,255,0.22);
-
-      border-radius:24px;
-
-      backdrop-filter:blur(10px);
--webkit-backdrop-filter:blur(10px);
-
-      box-shadow:
-        0 8px 32px rgba(0,0,0,0.25);
-
+    .login-box {
+      background: white;
+      width: 100%;
+      max-width: 400px;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
-    h1{
-      text-align:center;
-      margin-bottom:35px;
-      color:white;
-      font-size:32px;
-      font-weight:600;
-      letter-spacing:0.5px;
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #1e293b;
+      font-size: 28px;
     }
 
-    .input-group{
-      margin-bottom:18px;
+    .campo {
+      margin-bottom: 20px;
     }
 
-    input{
-
-      width:100%;
-      padding:16px 18px;
-
-      border-radius:14px;
-
-      border:1px solid rgba(255,255,255,0.18);
-
-      background:rgba(255,255,255,0.12);
-
-      color:white;
-
-      font-size:16px;
-
-      outline:none;
-
-      transition:0.3s;
-
+    .campo label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #334155;
     }
 
-    input::placeholder{
-      color:rgba(255,255,255,0.72);
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 16px;
     }
 
-    input:focus{
-
-      border:1px solid rgba(255,255,255,0.4);
-
-      background:rgba(255,255,255,0.18);
-
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: #0f172a;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
     }
 
-    button{
-
-      width:100%;
-      padding:16px;
-
-      margin-top:8px;
-
-      border:none;
-      border-radius:14px;
-
-      background:white;
-
-      color:#0f172a;
-
-      font-size:16px;
-      font-weight:600;
-
-      cursor:pointer;
-
-      transition:0.3s;
-
+    button:hover {
+      background: #1e293b;
     }
 
-    button:hover{
-
-      transform:translateY(-2px);
-
-      background:#f8fafc;
+    .erro {
+      color: #dc2626;
+      text-align: center;
+      margin-top: 15px;
+      display: none;
+      font-weight: bold;
     }
-
-    .erro{
-
-      color:#fecaca;
-
-      text-align:center;
-
-      margin-top:18px;
-
-      font-size:15px;
-    }
-
   </style>
 </head>
 <body>
 
-  <div class="login-box">
+<form class="login-box" id="formLogin" onsubmit="event.preventDefault(); fazerLogin();">
+  <h1>Controle de Imóveis</h1>
 
-    <h1>Controle de Imóveis</h1>
-
-    <div class="input-group">
-
-      <input
-        type="email"
-        id="email"
-        placeholder="Digite seu email"
-      >
-
-    </div>
-
-    <div class="input-group">
-
-      <input
-        type="password"
-        id="senha"
-        placeholder="Digite sua senha"
-      >
-
-    </div>
-
-    <button id="btnLogin">
-      Entrar
-    </button>
-
-    <div class="erro" id="erro"></div>
-
+  <div class="campo">
+    <label for="email">Email</label>
+    <input 
+      type="email" 
+      id="email" 
+      placeholder="Digite seu email"
+      required
+      autocomplete="email">
   </div>
 
-  <script>
+  <div class="campo">
+    <label for="senha">Senha</label>
+    <input 
+      type="password" 
+      id="senha" 
+      placeholder="Digite sua senha"
+      required
+      autocomplete="current-password">
+  </div>
 
-    const SUPABASE_URL =
-      "https://xkiswuhpgbifjshjmuvf.supabase.co";
+  <button type="submit">Entrar</button>
 
-    const SUPABASE_KEY =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraXN3dWhwZ2JpZmpzaGptdXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODk4OTksImV4cCI6MjA5NDU2NTg5OX0.MfDgb2Ie-iuHtaSHOvI1w_lL8B5yqlSujJL-PMKhKGg";
+  <div class="erro" id="erro">
+    Email ou senha incorretos
+  </div>
+</form>
 
-    const supabaseClient =
-      supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-      );
+<script>
+  const SUPABASE_URL = "https://xkiswuhpgbifjshjmuvf.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraXN3dWhwZ2JpZmpzaGptdXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODk4OTksImV4cCI6MjA5NDU2NTg5OX0.MfDgb2Ie-iuHtaSHOvI1w_lL8B5yqlSujJL-PMKhKGg";
 
-    document
-      .getElementById("btnLogin")
-      .addEventListener("click", fazerLogin);
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function fazerLogin(){
+  async function fazerLogin() {
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("senha").value;
+    const erroDiv = document.getElementById("erro");
 
-      const email =
-        document.getElementById("email").value.trim();
+    erroDiv.style.display = "none";
 
-      const senha =
-        document.getElementById("senha").value.trim();
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: senha
+    });
 
-      const { data, error } =
-        await supabaseClient.auth.signInWithPassword({
-
-          email: email,
-          password: senha
-
-        });
-
-      if(error){
-
-        document.getElementById("erro").innerText =
-          "Email ou senha inválidos";
-
-        return;
-      }
-
-      localStorage.setItem("logado", "sim");
-
-      window.location.href = "painel.html";
+    if (error) {
+      erroDiv.style.display = "block";
+      erroDiv.textContent = "Email ou senha incorretos";
+      return;
     }
 
-  </script>
+    localStorage.setItem("logado", "sim");
+    localStorage.setItem("usuarioLogado", email);
+    window.location.href = "painel.html";
+  }
+</script>
 
 </body>
 </html>

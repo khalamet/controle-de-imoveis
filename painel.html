@@ -547,22 +547,23 @@
       "imovel.html?id=" + encodeURIComponent(slug);
   }
 
-  async function carregarNomeUsuario(){
+    async function carregarNomeUsuario(){
+
+    const email =
+      localStorage.getItem("usuarioLogado") || "";
 
     let nome = "";
 
-    const { data: cfg } =
+    const { data } =
       await supabaseClient
-      .from("configuracoes")
-      .select("locador")
-      .eq("id", 1)
-      .single();
+      .from("usuarios")
+      .select("nome")
+      .eq("email", email)
+      .maybeSingle();
 
-    if(cfg && cfg.locador){
-      nome = cfg.locador;
+    if(data && data.nome){
+      nome = data.nome;
     }else{
-      const email =
-        localStorage.getItem("usuarioLogado") || "";
       nome = email.split("@")[0]
         .replace(/[._-]+/g, " ")
         .trim()

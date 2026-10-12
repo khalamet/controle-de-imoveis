@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Usuários - Patrimônio Familiar</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    body{
+      background:#0d1626;
+      min-height:100vh;
+    }
+
+    /* ---------- SIDEBAR ---------- */
+
+    .sidebar{
+      position:fixed;
+      top:0; left:0; bottom:0;
+      width:260px;
+      background:#0a1120;
+      border-right:1px solid rgba(255,255,255,0.06);
+      display:flex;
+      flex-direction:column;
+      padding:24px 16px;
+    }
+
+    .logo-area{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      padding:0 8px 22px 8px;
+    }
+
+    .logo-icon{
+      width:44px;
+      height:44px;
+      border-radius:12px;
+      background:rgba(245,158,11,0.12);
+      border:1px solid rgba(245,158,11,0.35);
+      color:#f59e0b;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .logo-icon svg{ width:24px; height:24px; }
+
+    .logo-title{
+      color:#ffffff;
+      font-weight:bold;
+      font-size:16px;
+    }
+
+    .logo-sub{
+      color:#94a3b8;
+      font-size:12px;
+      margin-top:2px;
+    }
+
+    .nav-item{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px 14px;
+      margin-bottom:6px;
+      border-radius:10px;
+      color:#cbd5e1;
+      font-size:15px;
+      cursor:pointer;
+      transition:0.2s;
+    }
+
+    .nav-item svg{ width:20px; height:20px; flex-shrink:0; }
+
+    .nav-item:hover{ background:rgba(255,255,255,0.05); }
+
+    .nav-item.active{
+      background:#1b2a44;
+      color:#ffffff;
+      font-weight:bold;
+    }
+
+    .sidebar-footer{
+      margin-top:auto;
+      padding:0 8px;
+      color:#64748b;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .sidebar-footer svg{
+      width:100%;
+      height:50px;
+      opacity:0.25;
+      margin-bottom:10px;
+    }
+
+    /* ---------- ÁREA PRINCIPAL ---------- */
+
+    .main{ margin-left:260px; }
+
+    .topo{
+      background:
+        linear-gradient(
+          rgba(8,13,25,0.55),
+          rgba(8,13,25,0.92)
+        ),
+        url("assets/logo.png") center/cover no-repeat;
+      padding:28px 40px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+
+    .topo-esq{
+      display:flex;
+      align-items:center;
+      gap:18px;
+    }
+
+    .topo-icone{
+      width:56px;
+      height:56px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.15);
+      color:#ffffff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .topo-icone svg{ width:28px; height:28px; }
+
+    .topo h1{
+      color:#ffffff;
+      font-size:34px;
+    }
+
+    .topo p{
+      color:#b6c2d4;
+      font-size:15px;
+      margin-top:4px;
+    }
+
+    .topo-dir{ position:relative; }
+
+    .usuario{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:#ffffff;
+      font-size:15px;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .avatar{
+      width:38px;
+      height:38px;
+      border-radius:50%;
+      background:#cbd5e1;
+      color:#334155;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .avatar svg{ width:20px; height:20px; }
+
+    .usuario > svg{ width:16px; height:16px; }
+
+    .menu{
+      position:absolute;
+      right:0;
+      top:48px;
+      min-width:170px;
+      background:#101a2c;
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:10px;
+      overflow:hidden;
+      display:none;
+      z-index:50;
+    }
+
+    .menu.aberto{ display:block; }
+
+    .menu button{
+      width:100%;
+      padding:12px 16px;
+      background:none;
+      border:none;
+      color:#e2e8f0;
+      font-size:14px;
+      text-align:left;
+      cursor:pointer;
+    }
+
+    .menu button:hover{
+      background:rgba(220,38,38,0.15);
+      color:#fca5a5;
+    }
+
+    /* ---------- LISTA DE USUÁRIOS ---------- */
+
+    .grade{
+      padding:32px 40px;
+      display:grid;
+      gap:20px;
+      grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+    }
+
+    .usuario-card{
+      background:#0f1a2e;
+      border:1px solid rgba(255,255,255,0.07);
+      border-radius:16px;
+      padding:20px;
+      display:flex;
+      align-items:center;
+      gap:14px;
+      transition:transform 0.2s;
+    }
+
+    .usuario-card:hover{ transform:translateY(-3px); }
+
+    .usuario-avatar{
+      width:46px;
+      height:46px;
+      border-radius:50%;
+      background:#1b2a44;
+      color:#93c5fd;
+      font-weight:bold;
+      font-size:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .usuario-info{ min-width:0; }
+
+    .usuario-nome{
+      color:#ffffff;
+      font-weight:bold;
+      font-size:16px;
+    }
+
+    .usuario-email{
+      color:#8fa3bb;
+      font-size:13.5px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .vazio{
+      grid-column:1 / -1;
+      color:#8fa3bb;
+      text-align:center;
+      padding:60px 0;
+      font-size:16px;
+    }
+
+    /* ---------- RESPONSIVO ---------- */
+
+    @media (max-width: 860px){
+      .sidebar{ width:68px; padding:24px 10px; }
+      .logo-area{ justify-content:center; padding-left:0; padding-right:0; }
+      .logo-texto, .nav-texto, .sidebar-footer{ display:none; }
+      .nav-item{ justify-content:center; padding:12px; }
+      .main{ margin-left:68px; }
+      .topo{ padding:20px; flex-direction:column; align-items:flex-start; }
+      .topo-dir{ align-self:flex-end; }
+      .grade{ padding:20px; }
+    }
+
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+
+  <div class="logo-area">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 10.5 12 3l9 7.5"/>
+        <path d="M5 9.5V21h14V9.5"/>
+      </svg>
+    </div>
+    <div class="logo-texto">
+      <div class="logo-title">Patrimônio Familiar</div>
+      <div class="logo-sub">Gestão de Imóveis</div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-item" onclick="window.location.href='painel.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 10.5 12 3l9 7.5"/>
+        <path d="M5 9.5V21h14V9.5"/>
+      </svg>
+      <span class="nav-texto">Imóveis</span>
+    </div>
+
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="8" r="3.5"/>
+        <path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/>
+        <circle cx="17.5" cy="9" r="2.5"/>
+        <path d="M16.5 14.6c2.6.3 4.4 2 5 4.9"/>
+      </svg>
+      <span class="nav-texto">Usuários</span>
+    </div>
+
+    <div class="nav-item" onclick="emBreve()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 20v-8"/>
+        <path d="M10 20V4"/>
+        <path d="M16 20v-6"/>
+        <path d="M22 20H2"/>
+      </svg>
+      <span class="nav-texto">Relatórios</span>
+    </div>
+
+    <div class="nav-item" onclick="emBreve()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/>
+      </svg>
+      <span class="nav-texto">Configurações</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <svg viewBox="0 0 200 60" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M0 55 45 22l30 24 35-32 40 40 50-24"/>
+      <path d="M60 55v-14h16v14"/>
+    </svg>
+    Mais que imóveis,<br>é o nosso futuro.
+  </div>
+
+</aside>
+
+<main class="main">
+
+  <header class="topo">
+
+    <div class="topo-esq">
+      <div class="topo-icone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="8" r="3.5"/>
+          <path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/>
+          <circle cx="17.5" cy="9" r="2.5"/>
+          <path d="M16.5 14.6c2.6.3 4.4 2 5 4.9"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Usuários</h1>
+        <p id="subtituloUsuarios">Carregando...</p>
+      </div>
+    </div>
+
+    <div class="topo-dir">
+      <div class="usuario" onclick="toggleMenu()">
+        <div class="avatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c1-4 4.5-6 8-6s7 2 8 6"/>
+          </svg>
+        </div>
+        <span id="nomeUsuario">Carregando...</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
+      </div>
+
+      <div class="menu" id="menuUsuario">
+        <button onclick="logout()">Sair da conta</button>
+      </div>
+    </div>
+
+  </header>
+
+  <section class="grade" id="grade">
+    <div class="vazio">Carregando usuários...</div>
+  </section>
+
+</main>
+
+<script>
+
+  if(localStorage.getItem("logado") !== "sim"){
+    window.location.href = "index.html";
+  }
+
+  const SUPABASE_URL =
+    "https://xkiswuhpgbifjshjmuvf.supabase.co";
+
+  const SUPABASE_KEY = "__SUPABASE_KEY__";
+
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+  function escapeHtml(texto){
+    return String(texto || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+  }
+
+  function iniciais(nome){
+    const partes = String(nome || "").trim().split(/\s+/);
+    const primeira = partes[0] ? partes[0][0] : "";
+    const ultima = partes.length > 1 ? partes[partes.length - 1][0] : "";
+    return (primeira + ultima).toUpperCase();
+  }
+
+  function emBreve(){
+    alert("Esta área ainda está em construção. Em breve!");
+  }
+
+  function toggleMenu(){
+    document.getElementById("menuUsuario")
+      .classList.toggle("aberto");
+  }
+
+  function logout(){
+    localStorage.removeItem("logado");
+    localStorage.removeItem("usuarioLogado");
+    window.location.href = "index.html";
+  }
+
+  async function carregarNomeUsuario(){
+
+    const email =
+      localStorage.getItem("usuarioLogado") || "";
+
+    let nome = "";
+
+    const { data } =
+      await supabaseClient
+      .from("usuarios")
+      .select("nome")
+      .eq("email", email)
+      .maybeSingle();
+
+    if(data && data.nome){
+      nome = data.nome;
+    }else{
+      nome = email.split("@")[0]
+        .replace(/[._-]+/g, " ")
+        .trim()
+        .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    document.getElementById("nomeUsuario")
+      .innerText = nome || "Usuário";
+  }
+
+  async function carregarUsuarios(){
+
+    const { data, error } =
+      await supabaseClient
+      .from("usuarios")
+      .select("*")
+      .order("nome");
+
+    const grade =
+      document.getElementById("grade");
+
+    if(error){
+      console.log(error);
+      grade.innerHTML =
+        '<div class="vazio">Erro ao carregar os usuários.</div>';
+      return;
+    }
+
+    if(!data || data.length === 0){
+      document.getElementById("subtituloUsuarios")
+        .innerText = "Nenhum usuário cadastrado.";
+      grade.innerHTML =
+        '<div class="vazio">Nenhum usuário cadastrado ainda.</div>';
+      return;
+    }
+
+    document.getElementById("subtituloUsuarios")
+      .innerText =
+      data.length +
+      (data.length === 1
+        ? " pessoa com acesso à plataforma."
+        : " pessoas com acesso à plataforma.");
+
+    grade.innerHTML = data.map(u => `
+      <div class="usuario-card">
+        <div class="usuario-avatar">${escapeHtml(iniciais(u.nome))}</div>
+        <div class="usuario-info">
+          <div class="usuario-nome">${escapeHtml(u.nome)}</div>
+          <div class="usuario-email">${escapeHtml(u.email)}</div>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  carregarNomeUsuario();
+  carregarUsuarios();
+
+</script>
+
+</body>
+</html>

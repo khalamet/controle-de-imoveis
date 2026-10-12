@@ -267,6 +267,11 @@
 
   let imovelId = null;
 
+  function verificarPorto(){
+    const nome = document.getElementById("nome").value;
+    return nome.toLowerCase().includes("porto");
+  }
+
   function toggleAluguel(){
 
     const alugado =
@@ -284,12 +289,23 @@
     const btnPortalFinancas =
       document.getElementById("btnPortalFinancas");
 
+    const isPorto = verificarPorto();
+
     if(alugado === "sim"){
 
       campos.style.display = "block";
-      btnRecibo.style.display = "block";
-      btnCarneLeao.style.display = "block";
-      btnPortalFinancas.style.display = "block";
+
+      if(isPorto){
+        // Porto: só Portal das Finanças
+        btnRecibo.style.display = "none";
+        btnCarneLeao.style.display = "none";
+        btnPortalFinancas.style.display = "block";
+      } else {
+        // Outros imóveis: Recibo e Carnê-Leão
+        btnRecibo.style.display = "block";
+        btnCarneLeao.style.display = "block";
+        btnPortalFinancas.style.display = "none";
+      }
 
     }else{
 

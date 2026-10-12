@@ -2,19 +2,15 @@ name: Keep Supabase Ativo
 
 on:
   schedule:
-    - cron: "0 12 * * *"
+    - cron: "0 0,12 * * *"
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Consulta o Supabase
+      - name: Conexao real no banco (psql)
         env:
-          CHAVE_BRUTA: ${{ secrets.SUPABASE_KEY }}
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
-          CHAVE=$(printf '%s' "$CHAVE_BRUTA" | tr -d '\r\n[:space:]"')
-          curl -sf "https://xkiswuhpgbifjshjmuvf.supabase.co/rest/v1/imoveis?select=id&limit=1" \
-            -H "apikey: ${CHAVE}" \
-            -H "Authorization: Bearer ${CHAVE}" \
-            && echo " - Supabase ativo!"
+          psql "$DATABASE_URL" -c "SELECT 1;" && echo "BANCO ATIVO: conexao real realizada."

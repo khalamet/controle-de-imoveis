@@ -136,7 +136,7 @@
 
   <div class="campo">
     <label>Nome do imóvel</label>
-    <input type="text" id="nome">
+    <input type="text" id="nome" oninput="toggleAluguel()">
   </div>
 
   <div class="campo">
@@ -213,6 +213,7 @@
     <button
       class="upload"
       id="btnRecibo"
+      style="display:none"
       onclick="emitirRecibo()">
       Emitir recibo PDF
     </button>
@@ -220,6 +221,7 @@
     <button
       class="carneleao"
       id="btnCarneLeao"
+      style="display:none"
       onclick="abrirCarneLeao()">
       Meu Carnê-Leão
     </button>
@@ -227,6 +229,7 @@
     <button
       class="portaldasfinancas"
       id="btnPortalFinancas"
+      style="display:none"
       onclick="abrirPortalFinancas()">
       Portal das Finanças
     </button>
@@ -268,8 +271,18 @@
   let imovelId = null;
 
   function verificarPorto(){
-    const nome = document.getElementById("nome").value;
-    return nome.toLowerCase().includes("porto");
+
+    const nome =
+      document.getElementById("nome").value.toLowerCase();
+
+    const endereco =
+      document.getElementById("endereco").value.toLowerCase();
+
+    const slugTexto = (slug || "").toLowerCase();
+
+    return nome.includes("porto") ||
+           endereco.includes("porto") ||
+           slugTexto.includes("porto");
   }
 
   function toggleAluguel(){
@@ -296,12 +309,13 @@
       campos.style.display = "block";
 
       if(isPorto){
-        // Porto: só Portal das Finanças
+
         btnRecibo.style.display = "none";
         btnCarneLeao.style.display = "none";
         btnPortalFinancas.style.display = "block";
-      } else {
-        // Outros imóveis: Recibo e Carnê-Leão
+
+      }else{
+
         btnRecibo.style.display = "block";
         btnCarneLeao.style.display = "block";
         btnPortalFinancas.style.display = "none";
@@ -507,11 +521,11 @@
     }
 
     await supabaseClient
-    .from("imoveis")
-    .update({
-      contrato_url: null
-    })
-    .eq("id", imovelId);
+      .from("imoveis")
+      .update({
+        contrato_url: null
+      })
+      .eq("id", imovelId);
 
     document.getElementById("contratoAtual")
     .innerHTML = "";
@@ -754,6 +768,8 @@ Deseja continuar?`;
 
     document.getElementById("status")
     .innerText = "Alterações salvas com sucesso.";
+
+    toggleAluguel();
   }
 
   function voltar(){

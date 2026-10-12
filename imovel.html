@@ -105,6 +105,10 @@
       background:#7c3aed;
     }
 
+    .portaldasfinancas{
+      background:#ea580c;
+    }
+
     .status{
       margin-top:25px;
       font-weight:bold;
@@ -221,6 +225,13 @@
     </button>
 
     <button
+      class="portaldasfinancas"
+      id="btnPortalFinancas"
+      onclick="abrirPortalFinancas()">
+      Portal das Finanças
+    </button>
+
+    <button
       class="voltar"
       onclick="voltar()">
       Voltar
@@ -241,8 +252,7 @@
   const SUPABASE_URL =
     "https://xkiswuhpgbifjshjmuvf.supabase.co";
 
-  const SUPABASE_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraXN3dWhwZ2JpZmpzaGptdXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODk4OTksImV4cCI6MjA5NDU2NTg5OX0.MfDgb2Ie-iuHtaSHOvI1w_lL8B5yqlSujJL-PMKhKGg";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraXN3dWhwZ2JpZmpzaGptdXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODk4OTksImV4cCI6MjA5NDU2NTg5OX0.MfDgb2Ie-iuHtaSHOvI1w_lL8B5yqlSujJL-PMKhKGg";
 
   const supabaseClient =
     supabase.createClient(
@@ -271,17 +281,22 @@
     const btnCarneLeao =
       document.getElementById("btnCarneLeao");
 
+    const btnPortalFinancas =
+      document.getElementById("btnPortalFinancas");
+
     if(alugado === "sim"){
 
       campos.style.display = "block";
       btnRecibo.style.display = "block";
       btnCarneLeao.style.display = "block";
+      btnPortalFinancas.style.display = "block";
 
     }else{
 
       campos.style.display = "none";
       btnRecibo.style.display = "none";
       btnCarneLeao.style.display = "none";
+      btnPortalFinancas.style.display = "none";
     }
   }
 
@@ -476,11 +491,11 @@
     }
 
     await supabaseClient
-      .from("imoveis")
-      .update({
-        contrato_url: null
-      })
-      .eq("id", imovelId);
+    .from("imoveis")
+    .update({
+      contrato_url: null
+    })
+    .eq("id", imovelId);
 
     document.getElementById("contratoAtual")
     .innerHTML = "";
@@ -668,6 +683,27 @@ Deseja abrir o Meu Carnê-Leão?`;
     if(confirm(mensagem)){
       window.open(
         "https://cav.receita.fazenda.gov.br/autenticacao/login/index/10028",
+        "_blank"
+      );
+    }
+  }
+
+  function abrirPortalFinancas(){
+
+    const nome =
+      document.getElementById("nome").value;
+
+    const mensagem =
+`Você será redirecionado ao Portal das Finanças (Portugal)
+para declarar rendas do imóvel:
+
+${nome}
+
+Deseja continuar?`;
+
+    if(confirm(mensagem)){
+      window.open(
+        "https://imoveis.portaldasfinancas.gov.pt/arrendamento/",
         "_blank"
       );
     }

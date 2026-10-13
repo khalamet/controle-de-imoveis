@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Relatórios - Patrimônio Familiar</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    body{
+      background:#0d1626;
+      min-height:100vh;
+    }
+
+    /* ---------- SIDEBAR ---------- */
+
+    .sidebar{
+      position:fixed;
+      top:0; left:0; bottom:0;
+      width:260px;
+      background:#0a1120;
+      border-right:1px solid rgba(255,255,255,0.06);
+      display:flex;
+      flex-direction:column;
+      padding:24px 16px;
+    }
+
+    .logo-area{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      padding:0 8px 22px 8px;
+    }
+
+    .logo-icon{
+      width:44px;
+      height:44px;
+      border-radius:12px;
+      background:rgba(245,158,11,0.12);
+      border:1px solid rgba(245,158,11,0.35);
+      color:#f59e0b;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .logo-icon svg{ width:24px; height:24px; }
+
+    .logo-title{
+      color:#ffffff;
+      font-weight:bold;
+      font-size:16px;
+    }
+
+    .logo-sub{
+      color:#94a3b8;
+      font-size:12px;
+      margin-top:2px;
+    }
+
+    .nav-item{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px 14px;
+      margin-bottom:6px;
+      border-radius:10px;
+      color:#cbd5e1;
+      font-size:15px;
+      cursor:pointer;
+      transition:0.2s;
+    }
+
+    .nav-item svg{ width:20px; height:20px; flex-shrink:0; }
+
+    .nav-item:hover{ background:rgba(255,255,255,0.05); }
+
+    .nav-item.active{
+      background:#1b2a44;
+      color:#ffffff;
+      font-weight:bold;
+    }
+
+    .sidebar-footer{
+      margin-top:auto;
+      padding:0 8px;
+      color:#64748b;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .sidebar-footer svg{
+      width:100%;
+      height:50px;
+      opacity:0.25;
+      margin-bottom:10px;
+    }
+
+    /* ---------- ÁREA PRINCIPAL ---------- */
+
+    .main{ margin-left:260px; }
+
+    .topo{
+      background:
+        linear-gradient(
+          rgba(8,13,25,0.55),
+          rgba(8,13,25,0.92)
+        ),
+        url("assets/logo.png") center/cover no-repeat;
+      padding:28px 40px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+
+    .topo-esq{
+      display:flex;
+      align-items:center;
+      gap:18px;
+    }
+
+    .topo-icone{
+      width:56px;
+      height:56px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.15);
+      color:#ffffff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .topo-icone svg{ width:28px; height:28px; }
+
+    .topo h1{
+      color:#ffffff;
+      font-size:34px;
+    }
+
+    .topo p{
+      color:#b6c2d4;
+      font-size:15px;
+      margin-top:4px;
+    }
+
+    .topo-dir{ position:relative; }
+
+    .usuario{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:#ffffff;
+      font-size:15px;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .avatar{
+      width:38px;
+      height:38px;
+      border-radius:50%;
+      background:#cbd5e1;
+      color:#334155;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .avatar svg{ width:20px; height:20px; }
+
+    .usuario > svg{ width:16px; height:16px; }
+
+    .menu{
+      position:absolute;
+      right:0;
+      top:48px;
+      min-width:170px;
+      background:#101a2c;
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:10px;
+      overflow:hidden;
+      display:none;
+      z-index:50;
+    }
+
+    .menu.aberto{ display:block; }
+
+    .menu button{
+      width:100%;
+      padding:12px 16px;
+      background:none;
+      border:none;
+      color:#e2e8f0;
+      font-size:14px;
+      text-align:left;
+      cursor:pointer;
+    }
+
+    .menu button:hover{
+      background:rgba(220,38,38,0.15);
+      color:#fca5a5;
+    }
+
+    /* ---------- CONTEÚDO ---------- */
+
+    .conteudo{
+      padding:32px 40px;
+      display:flex;
+      flex-direction:column;
+      gap:24px;
+    }
+
+    .totais{
+      display:grid;
+      gap:16px;
+      grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+    }
+
+    .total-card{
+      background:#0f2a1c;
+      border:1px solid rgba(34,197,94,0.35);
+      border-radius:16px;
+      padding:20px;
+    }
+
+    .total-card .rotulo{
+      color:#86efac;
+      font-size:13px;
+      font-weight:bold;
+      margin-bottom:8px;
+    }
+
+    .total-card .valor{
+      color:#4ade80;
+      font-size:28px;
+      font-weight:bold;
+    }
+
+    .cartao{
+      background:#0f1a2e;
+      border:1px solid rgba(255,255,255,0.07);
+      border-radius:16px;
+      padding:24px;
+    }
+
+    .cartao h2{
+      color:#ffffff;
+      font-size:18px;
+      margin-bottom:18px;
+    }
+
+    .form-linha{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      align-items:flex-end;
+    }
+
+    .form-campo{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      flex:1;
+      min-width:150px;
+    }
+
+    .form-campo label{
+      color:#94a3b8;
+      font-size:13px;
+      font-weight:bold;
+    }
+
+    .form-campo input,
+    .form-campo select{
+      background:#101a2c;
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:10px;
+      color:#ffffff;
+      padding:11px 12px;
+      font-size:15px;
+      outline:none;
+      width:100%;
+    }
+
+    .form-campo input:focus,
+    .form-campo select:focus{
+      border-color:#3b82f6;
+    }
+
+    .btn-add{
+      padding:12px 22px;
+      border:none;
+      border-radius:10px;
+      background:#16a34a;
+      color:#ffffff;
+      font-size:15px;
+      font-weight:bold;
+      cursor:pointer;
+      transition:0.2s;
+    }
+
+    .btn-add:hover{ background:#15803d; }
+
+    .tabela-topo{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .tabela-topo h2{ margin-bottom:0; }
+
+    .tabela-topo select{
+      background:#101a2c;
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:10px;
+      color:#ffffff;
+      padding:9px 12px;
+      font-size:15px;
+      outline:none;
+    }
+
+    .tabela-wrap{ overflow-x:auto; }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:640px;
+    }
+
+    th{
+      text-align:left;
+      color:#8fa3bb;
+      font-size:13px;
+      padding:10px 12px;
+      border-bottom:1px solid rgba(255,255,255,0.1);
+    }
+
+    td{
+      color:#e2e8f0;
+      font-size:14.5px;
+      padding:12px;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+
+    .btn-excluir{
+      padding:7px 14px;
+      border:1px solid rgba(220,38,38,0.5);
+      border-radius:8px;
+      background:transparent;
+      color:#fca5a5;
+      font-size:13px;
+      cursor:pointer;
+      transition:0.2s;
+    }
+
+    .btn-excluir:hover{
+      background:rgba(220,38,38,0.15);
+    }
+
+    .vazio{
+      color:#8fa3bb;
+      text-align:center;
+      padding:40px 0;
+      font-size:15px;
+    }
+
+    /* ---------- RESPONSIVO ---------- */
+
+    @media (max-width: 860px){
+      .sidebar{ width:68px; padding:24px 10px; }
+      .logo-area{ justify-content:center; padding-left:0; padding-right:0; }
+      .logo-texto, .nav-texto, .sidebar-footer{ display:none; }
+      .nav-item{ justify-content:center; padding:12px; }
+      .main{ margin-left:68px; }
+      .topo{ padding:20px; flex-direction:column; align-items:flex-start; }
+      .topo-dir{ align-self:flex-end; }
+      .conteudo{ padding:20px; }
+    }
+
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+
+  <div class="logo-area">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 10.5 12 3l9 7.5"/>
+        <path d="M5 9.5V21h14V9.5"/>
+      </svg>
+    </div>
+    <div class="logo-texto">
+      <div class="logo-title">Patrimônio Familiar</div>
+      <div class="logo-sub">Gestão de Imóveis</div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-item" onclick="window.location.href='painel.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 10.5 12 3l9 7.5"/>
+        <path d="M5 9.5V21h14V9.5"/>
+      </svg>
+      <span class="nav-texto">Imóveis</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='usuarios.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="8" r="3.5"/>
+        <path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/>
+        <circle cx="17.5" cy="9" r="2.5"/>
+        <path d="M16.5 14.6c2.6.3 4.4 2 5 4.9"/>
+      </svg>
+      <span class="nav-texto">Usuários</span>
+    </div>
+
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 20v-8"/>
+        <path d="M10 20V4"/>
+        <path d="M16 20v-6"/>
+        <path d="M22 20H2"/>
+      </svg>
+      <span class="nav-texto">Relatórios</span>
+    </div>
+
+    <div class="nav-item" onclick="emBreve()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/>
+      </svg>
+      <span class="nav-texto">Configurações</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <svg viewBox="0 0 200 60" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M0 55 45 22l30 24 35-32 40 40 50-24"/>
+      <path d="M60 55v-14h16v14"/>
+    </svg>
+    Mais que imóveis,<br>é o nosso futuro.
+  </div>
+
+</aside>
+
+<main class="main">
+
+  <header class="topo">
+
+    <div class="topo-esq">
+      <div class="topo-icone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20v-8"/>
+          <path d="M10 20V4"/>
+          <path d="M16 20v-6"/>
+          <path d="M22 20H2"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Relatórios</h1>
+        <p>Controle de aluguéis recebidos e totais por ano.</p>
+      </div>
+    </div>
+
+    <div class="topo-dir">
+      <div class="usuario" onclick="toggleMenu()">
+        <div class="avatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c1-4 4.5-6 8-6s7 2 8 6"/>
+          </svg>
+        </div>
+        <span id="nomeUsuario">Carregando...</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
+      </div>
+
+      <div class="menu" id="menuUsuario">
+        <button onclick="logout()">Sair da conta</button>
+      </div>
+    </div>
+
+  </header>
+
+  <section class="conteudo">
+
+    <div class="totais" id="totais"></div>
+
+    <div class="cartao">
+      <h2>Lançar novo recebimento</h2>
+
+      <div class="form-linha">
+
+        <div class="form-campo">
+          <label>Imóvel</label>
+          <select id="formImovel"></select>
+        </div>
+
+        <div class="form-campo">
+          <label>Mês de referência</label>
+          <input type="month" id="formMes">
+        </div>
+
+        <div class="form-campo">
+          <label>Valor recebido</label>
+          <input type="text" id="formValor" placeholder="Ex: 2.800,00">
+        </div>
+
+        <div class="form-campo" style="max-width:120px">
+          <label>Moeda</label>
+          <select id="formMoeda">
+            <option value="BRL">R$</option>
+            <option value="EUR">€</option>
+          </select>
+        </div>
+
+        <div class="form-campo">
+          <label>Data do recebimento</label>
+          <input type="date" id="formData">
+        </div>
+
+        <button class="btn-add" onclick="adicionarPagamento()">
+          Adicionar
+        </button>
+
+      </div>
+    </div>
+
+    <div class="cartao">
+
+      <div class="tabela-topo">
+        <h2 id="tituloTabela">Lançamentos</h2>
+        <select id="filtroAno" onchange="renderizar()"></select>
+      </div>
+
+      <div class="tabela-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Imóvel</th>
+              <th>Mês de referência</th>
+              <th>Valor</th>
+              <th>Recebido em</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabela"></tbody>
+        </table>
+      </div>
+
+      <div class="vazio" id="vazioTabela" style="display:none">
+        Nenhum lançamento neste ano ainda.
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+<script>
+
+  if(localStorage.getItem("logado") !== "sim"){
+    window.location.href = "index.html";
+  }
+
+  const SUPABASE_URL =
+    "https://xkiswuhpgbifjshjmuvf.supabase.co";
+
+  const SUPABASE_KEY = "__SUPABASE_KEY__";
+
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+  let todosPagamentos = [];
+  let todosImoveis = [];
+
+  function escapeHtml(texto){
+    return String(texto || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+  }
+
+  function emBreve(){
+    alert("Esta área ainda está em construção. Em breve!");
+  }
+
+  function toggleMenu(){
+    document.getElementById("menuUsuario")
+      .classList.toggle("aberto");
+  }
+
+  function logout(){
+    localStorage.removeItem("logado");
+    localStorage.removeItem("usuarioLogado");
+    window.location.href = "index.html";
+  }
+
+  function parseValor(txt){
+    let s = String(txt || "").trim();
+    if(s.includes(",")){
+      s = s.replace(/\./g, "").replace(",", ".");
+    }
+    return parseFloat(s);
+  }
+
+  function formatarMoeda(valor, moeda){
+    const simbolo = moeda === "EUR" ? "€ " : "R$ ";
+    return simbolo + Number(valor).toLocaleString(
+      "pt-BR",
+      { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+    );
+  }
+
+  function formatarMes(comp){
+    const partes = String(comp).split("-");
+    const nomes = ["jan","fev","mar","abr","mai","jun",
+                   "jul","ago","set","out","nov","dez"];
+    const indice = parseInt(partes[1], 10) - 1;
+    return (nomes[indice] || "?") + "/" + partes[0];
+  }
+
+  function formatarData(data){
+    if(!data) return "—";
+    const d = new Date(data + "T00:00:00");
+    return d.toLocaleDateString("pt-BR");
+  }
+
+  async function carregarNomeUsuario(){
+
+    const email =
+      localStorage.getItem("usuarioLogado") || "";
+
+    let nome = "";
+
+    const { data } =
+      await supabaseClient
+      .from("usuarios")
+      .select("nome")
+      .eq("email", email)
+      .maybeSingle();
+
+    if(data && data.nome){
+      nome = data.nome;
+    }else{
+      nome = email.split("@")[0]
+        .replace(/[._-]+/g, " ")
+        .trim()
+        .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    document.getElementById("nomeUsuario")
+      .innerText = nome || "Usuário";
+  }
+
+  async function carregarDados(){
+
+    const { data: imoveis } =
+      await supabaseClient
+      .from("imoveis")
+      .select("id, nome")
+      .order("nome");
+
+    todosImoveis = imoveis || [];
+
+    const selectImovel =
+      document.getElementById("formImovel");
+
+    selectImovel.innerHTML = todosImoveis.map(i =>
+      `<option value="${i.id}">${escapeHtml(i.nome)}</option>`
+    ).join("");
+
+    const { data: pagamentos, error } =
+      await supabaseClient
+      .from("pagamentos")
+      .select("*")
+      .order("competencia", { ascending: false });
+
+    if(error){
+      console.log(error);
+      alert("Erro ao carregar os lançamentos.");
+      return;
+    }
+
+    todosPagamentos = pagamentos || [];
+
+    montarFiltroAnos();
+    renderizar();
+  }
+
+  function montarFiltroAnos(){
+
+    const anos = new Set();
+
+    todosPagamentos.forEach(p => {
+      anos.add(String(p.competencia).slice(0, 4));
+    });
+
+    anos.add(String(new Date().getFullYear()));
+
+    const lista = [...anos].sort().reverse();
+
+    const filtro = document.getElementById("filtroAno");
+
+    const atual = filtro.value;
+
+    filtro.innerHTML = lista.map(ano =>
+      `<option value="${ano}">${ano}</option>`
+    ).join("");
+
+    if(lista.includes(atual)){
+      filtro.value = atual;
+    }
+  }
+
+  function renderizar(){
+
+    const ano =
+      document.getElementById("filtroAno").value;
+
+    const doAno = todosPagamentos.filter(p =>
+      String(p.competencia).startsWith(ano)
+    );
+
+    document.getElementById("tituloTabela")
+      .innerText = "Lançamentos de " + ano;
+
+    /* ----- totais por moeda ----- */
+
+    const totais = {};
+
+    doAno.forEach(p => {
+      totais[p.moeda] =
+        (totais[p.moeda] || 0) + Number(p.valor);
+    });
+
+    const areaTotais =
+      document.getElementById("totais");
+
+    const chaves = Object.keys(totais);
+
+    if(chaves.length === 0){
+      areaTotais.innerHTML = `
+        <div class="total-card">
+          <div class="rotulo">TOTAL RECEBIDO EM ${ano}</div>
+          <div class="valor">R$ 0,00</div>
+        </div>`;
+    }else{
+      areaTotais.innerHTML = chaves.map(moeda => `
+        <div class="total-card">
+          <div class="rotulo">
+            TOTAL RECEBIDO EM ${ano} (${moeda === "EUR" ? "€" : "R$"})
+          </div>
+          <div class="valor">${formatarMoeda(totais[moeda], moeda)}</div>
+        </div>
+      `).join("");
+    }
+
+    /* ----- tabela ----- */
+
+    const corpo =
+      document.getElementById("corpoTabela");
+
+    const vazio =
+      document.getElementById("vazioTabela");
+
+    if(doAno.length === 0){
+      corpo.innerHTML = "";
+      vazio.style.display = "block";
+      return;
+    }
+
+    vazio.style.display = "none";
+
+    corpo.innerHTML = doAno.map(p => {
+
+      const imovel = todosImoveis.find(i => i.id === p.imovel_id);
+
+      return `
+        <tr>
+          <td>${escapeHtml(imovel ? imovel.nome : "—")}</td>
+          <td>${formatarMes(p.competencia)}</td>
+          <td>${formatarMoeda(p.valor, p.moeda)}</td>
+          <td>${formatarData(p.data_recebimento)}</td>
+          <td>
+            <button
+              class="btn-excluir"
+              onclick="excluirPagamento(${p.id})">
+              Excluir
+            </button>
+          </td>
+        </tr>
+      `;
+
+    }).join("");
+  }
+
+  async function adicionarPagamento(){
+
+    const imovelId =
+      document.getElementById("formImovel").value;
+
+    const competencia =
+      document.getElementById("formMes").value;
+
+    const valor = parseValor(
+      document.getElementById("formValor").value
+    );
+
+    const moeda =
+      document.getElementById("formMoeda").value;
+
+    const dataRecebimento =
+      document.getElementById("formData").value;
+
+    if(!imovelId){
+      alert("Selecione um imóvel.");
+      return;
+    }
+
+    if(!competencia){
+      alert("Informe o mês de referência.");
+      return;
+    }
+
+    if(isNaN(valor) || valor <= 0){
+      alert("Informe um valor válido.");
+      return;
+    }
+
+    const { error } =
+      await supabaseClient
+      .from("pagamentos")
+      .insert({
+        imovel_id: parseInt(imovelId, 10),
+        competencia: competencia,
+        valor: valor,
+        moeda: moeda,
+        data_recebimento: dataRecebimento || null
+      });
+
+    if(error){
+      console.log(error);
+      alert("Erro ao salvar o lançamento.");
+      return;
+    }
+
+    document.getElementById("formValor").value = "";
+    document.getElementById("formData").value = "";
+
+    await carregarDados();
+
+    alert("Lançamento adicionado com sucesso!");
+  }
+
+  async function excluirPagamento(id){
+
+    if(!confirm("Deseja excluir este lançamento?")){
+      return;
+    }
+
+    const { error } =
+      await supabaseClient
+      .from("pagamentos")
+      .delete()
+      .eq("id", id);
+
+    if(error){
+      console.log(error);
+      alert("Erro ao excluir o lançamento.");
+      return;
+    }
+
+    await carregarDados();
+  }
+
+  document.getElementById("formMes").value =
+    new Date().toISOString().slice(0, 7);
+
+  carregarNomeUsuario();
+  carregarDados();
+
+</script>
+
+</body>
+</html>

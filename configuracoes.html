@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Configurações - Patrimônio Familiar</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    body{
+      background:#0d1626;
+      min-height:100vh;
+    }
+
+    .sidebar{
+      position:fixed;
+      top:0; left:0; bottom:0;
+      width:260px;
+      background:#0a1120;
+      border-right:1px solid rgba(255,255,255,0.06);
+      display:flex;
+      flex-direction:column;
+      padding:24px 16px;
+    }
+
+    .logo-area{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      padding:0 8px 22px 8px;
+    }
+
+    .logo-icon{
+      width:44px;
+      height:44px;
+      border-radius:12px;
+      background:rgba(245,158,11,0.12);
+      border:1px solid rgba(245,158,11,0.35);
+      color:#f59e0b;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .logo-icon svg{ width:24px; height:24px; }
+
+    .logo-title{
+      color:#ffffff;
+      font-weight:bold;
+      font-size:16px;
+    }
+
+    .logo-sub{
+      color:#94a3b8;
+      font-size:12px;
+      margin-top:2px;
+    }
+
+    .nav-item{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:12px 14px;
+      margin-bottom:6px;
+      border-radius:10px;
+      color:#cbd5e1;
+      font-size:15px;
+      cursor:pointer;
+      transition:0.2s;
+    }
+
+    .nav-item svg{ width:20px; height:20px; flex-shrink:0; }
+
+    .nav-item:hover{ background:rgba(255,255,255,0.05); }
+
+    .nav-item.active{
+      background:#1b2a44;
+      color:#ffffff;
+      font-weight:bold;
+    }
+
+    .sidebar-footer{
+      margin-top:auto;
+      padding:0 8px;
+      color:#64748b;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .sidebar-footer svg{
+      width:100%;
+      height:50px;
+      opacity:0.25;
+      margin-bottom:10px;
+    }
+
+    .versao-atual{
+      padding:12px 14px;
+      margin:12px 8px 0 8px;
+      border-radius:10px;
+      background:rgba(59,130,246,0.1);
+      border:1px solid rgba(59,130,246,0.3);
+      color:#93c5fd;
+      font-size:13px;
+      cursor:pointer;
+      text-align:center;
+      transition:0.2s;
+    }
+
+    .versao-atual:hover{
+      background:rgba(59,130,246,0.18);
+    }
+
+    .main{ margin-left:260px; }
+
+    .topo{
+      background:
+        linear-gradient(
+          rgba(8,13,25,0.55),
+          rgba(8,13,25,0.92)
+        ),
+        url("assets/logo.png") center/cover no-repeat;
+      padding:28px 40px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+      border-bottom:1px solid rgba(255,255,255,0.06);
+    }
+
+    .topo-esq{
+      display:flex;
+      align-items:center;
+      gap:18px;
+    }
+
+    .topo-icone{
+      width:56px;
+      height:56px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.15);
+      color:#ffffff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .topo-icone svg{ width:28px; height:28px; }
+
+    .topo h1{
+      color:#ffffff;
+      font-size:34px;
+    }
+
+    .topo p{
+      color:#b6c2d4;
+      font-size:15px;
+      margin-top:4px;
+    }
+
+    .topo-dir{ position:relative; }
+
+    .usuario{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:#ffffff;
+      font-size:15px;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .avatar{
+      width:38px;
+      height:38px;
+      border-radius:50%;
+      background:#cbd5e1;
+      color:#334155;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .avatar svg{ width:20px; height:20px; }
+
+    .usuario > svg{ width:16px; height:16px; }
+
+    .menu{
+      position:absolute;
+      right:0;
+      top:48px;
+      min-width:170px;
+      background:#101a2c;
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:10px;
+      overflow:hidden;
+      display:none;
+      z-index:50;
+    }
+
+    .menu.aberto{ display:block; }
+
+    .menu button{
+      width:100%;
+      padding:12px 16px;
+      background:none;
+      border:none;
+      color:#e2e8f0;
+      font-size:14px;
+      text-align:left;
+      cursor:pointer;
+    }
+
+    .menu button:hover{
+      background:rgba(220,38,38,0.15);
+      color:#fca5a5;
+    }
+
+    .conteudo{
+      padding:32px 40px;
+      display:flex;
+      flex-direction:column;
+      gap:24px;
+      max-width:900px;
+    }
+
+    .cartao{
+      background:#0f1a2e;
+      border:1px solid rgba(255,255,255,0.07);
+      border-radius:16px;
+      padding:24px;
+    }
+
+    .cartao h2{
+      color:#ffffff;
+      font-size:18px;
+      margin-bottom:18px;
+    }
+
+    .form-campo{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-bottom:14px;
+    }
+
+    .form-campo label{
+      color:#94a3b8;
+      font-size:13px;
+      font-weight:bold;
+    }
+
+    .form-campo input,
+    .form-campo textarea{
+      background:#1a2740;
+      border:1px solid rgba(255,255,255,0.18);
+      border-radius:10px;
+      color:#ffffff;
+      padding:11px 12px;
+      font-size:15px;
+      outline:none;
+      font-family:inherit;
+      color-scheme: dark;
+    }
+
+    .form-campo input:focus,
+    .form-campo textarea:focus{
+      border-color:#3b82f6;
+    }
+
+    .form-campo textarea{
+      min-height:120px;
+      resize:vertical;
+    }
+
+    .btn-publicar{
+      padding:12px 24px;
+      border:none;
+      border-radius:10px;
+      background:#16a34a;
+      color:#ffffff;
+      font-size:15px;
+      font-weight:bold;
+      cursor:pointer;
+      transition:0.2s;
+    }
+
+    .btn-publicar:hover{ background:#15803d; }
+
+    .versao-item{
+      background:#0f1a2e;
+      border:1px solid rgba(255,255,255,0.07);
+      border-radius:14px;
+      padding:18px 20px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .versao-topo{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .versao-numero{
+      background:rgba(59,130,246,0.15);
+      color:#93c5fd;
+      padding:5px 12px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:bold;
+    }
+
+    .versao-data{
+      color:#64748b;
+      font-size:12.5px;
+    }
+
+    .versao-titulo{
+      color:#ffffff;
+      font-size:16px;
+      font-weight:bold;
+    }
+
+    .versao-descricao{
+      color:#cbd5e1;
+      font-size:14.5px;
+      line-height:1.6;
+      white-space:pre-wrap;
+    }
+
+    .btn-excluir{
+      align-self:flex-end;
+      padding:7px 14px;
+      border:1px solid rgba(220,38,38,0.5);
+      border-radius:8px;
+      background:transparent;
+      color:#fca5a5;
+      font-size:13px;
+      cursor:pointer;
+      transition:0.2s;
+    }
+
+    .btn-excluir:hover{ background:rgba(220,38,38,0.15); }
+
+    .vazio{
+      color:#8fa3bb;
+      text-align:center;
+      padding:40px 0;
+      font-size:15px;
+    }
+
+    .nao-admin{
+      background:rgba(245,158,11,0.08);
+      border:1px solid rgba(245,158,11,0.3);
+      color:#fbbf24;
+      padding:16px;
+      border-radius:10px;
+      font-size:14px;
+    }
+
+    @media (max-width: 860px){
+      .sidebar{ width:68px; padding:24px 10px; }
+      .logo-area{ justify-content:center; padding-left:0; padding-right:0; }
+      .logo-texto, .nav-texto, .sidebar-footer, .versao-atual{ display:none; }
+      .nav-item{ justify-content:center; padding:12px; }
+      .main{ margin-left:68px; }
+      .topo{ padding:20px; flex-direction:column; align-items:flex-start; }
+      .topo-dir{ align-self:flex-end; }
+      .conteudo{ padding:20px; }
+    }
+
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+
+  <div class="logo-area">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 10.5 12 3l9 7.5"/>
+        <path d="M5 9.5V21h14V9.5"/>
+      </svg>
+    </div>
+    <div class="logo-texto">
+      <div class="logo-title">Patrimônio Familiar</div>
+      <div class="logo-sub">Gestão de Imóveis</div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-item" onclick="window.location.href='painel.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 10.5 12 3l9 7.5"/>
+        <path d="M5 9.5V21h14V9.5"/>
+      </svg>
+      <span class="nav-texto">Imóveis</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='usuarios.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="8" r="3.5"/>
+        <path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/>
+        <circle cx="17.5" cy="9" r="2.5"/>
+        <path d="M16.5 14.6c2.6.3 4.4 2 5 4.9"/>
+      </svg>
+      <span class="nav-texto">Usuários</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='relatorios.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 20v-8"/>
+        <path d="M10 20V4"/>
+        <path d="M16 20v-6"/>
+        <path d="M22 20H2"/>
+      </svg>
+      <span class="nav-texto">Relatórios</span>
+    </div>
+
+    <div class="nav-item" onclick="window.location.href='sugestoes.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18h6"/>
+        <path d="M10 21h4"/>
+        <path d="M12 3a6 6 0 0 0-4 10.5c.7.6 1 1.5 1 2.5h6c0-1 .3-1.9 1-2.5A6 6 0 0 0 12 3z"/>
+      </svg>
+      <span class="nav-texto">Sugestões</span>
+    </div>
+
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/>
+      </svg>
+      <span class="nav-texto">Configurações</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <svg viewBox="0 0 200 60" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M0 55 45 22l30 24 35-32 40 40 50-24"/>
+      <path d="M60 55v-14h16v14"/>
+    </svg>
+    Mais que imóveis,<br>é o nosso futuro.
+  </div>
+
+  <div class="versao-atual" id="btnVersao" onclick="abrirModalVersoes()">
+    Versão ...
+  </div>
+
+</aside>
+
+<main class="main">
+
+  <header class="topo">
+
+    <div class="topo-esq">
+      <div class="topo-icone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Configurações</h1>
+        <p>Gerenciamento de versões e histórico de atualizações.</p>
+      </div>
+    </div>
+
+    <div class="topo-dir">
+      <div class="usuario" onclick="toggleMenu()">
+        <div class="avatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c1-4 4.5-6 8-6s7 2 8 6"/>
+          </svg>
+        </div>
+        <span id="nomeUsuario">Carregando...</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
+      </div>
+
+      <div class="menu" id="menuUsuario">
+        <button onclick="logout()">Sair da conta</button>
+      </div>
+    </div>
+
+  </header>
+
+  <section class="conteudo">
+
+    <div id="blocoAdmin"></div>
+
+    <div class="cartao">
+      <h2>Histórico de versões</h2>
+      <div id="listaVersoes">
+        <div class="vazio">Carregando...</div>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- MODAL DE VERSÕES -->
+<div id="modalVersoes" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  z-index:100;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+">
+  <div style="
+    background:#0f1a2e;
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:16px;
+    max-width:600px;
+    width:100%;
+    max-height:80vh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  ">
+    <div style="
+      padding:20px 24px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    ">
+      <h2 style="color:#fff; font-size:20px;">Histórico de versões</h2>
+      <button
+        onclick="fecharModalVersoes()"
+        style="
+          background:none;
+          border:none;
+          color:#94a3b8;
+          font-size:24px;
+          cursor:pointer;
+          padding:0;
+          line-height:1;
+        ">×</button>
+    </div>
+    <div id="modalConteudo" style="
+      padding:16px 24px;
+      overflow-y:auto;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    "></div>
+  </div>
+</div>
+
+<script>
+
+  if(localStorage.getItem("logado") !== "sim"){
+    window.location.href = "index.html";
+  }
+
+  const SUPABASE_URL =
+    "https://xkiswuhpgbifjshjmuvf.supabase.co";
+
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhraXN3dWhwZ2JpZmpzaGptdXZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5ODk4OTksImV4cCI6MjA5NDU2NTg5OX0.MfDgb2Ie-iuHtaSHOvI1w_lL8B5yqlSujJL-PMKhKGg";
+
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+  const emailAtual =
+    localStorage.getItem("usuarioLogado") || "";
+
+  let ehAdmin = false;
+  let nomeAtual = "";
+  let todasVersoes = [];
+
+  function escapeHtml(texto){
+    return String(texto || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+  }
+
+  function toggleMenu(){
+    document.getElementById("menuUsuario")
+      .classList.toggle("aberto");
+  }
+
+  function logout(){
+    localStorage.removeItem("logado");
+    localStorage.removeItem("usuarioLogado");
+    window.location.href = "index.html";
+  }
+
+  function formatarDataHora(data){
+    return new Date(data).toLocaleDateString(
+      "pt-BR",
+      {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }
+    );
+  }
+
+  async function carregarUsuario(){
+
+    const { data } =
+      await supabaseClient
+      .from("usuarios")
+      .select("nome, is_admin")
+      .eq("email", emailAtual)
+      .maybeSingle();
+
+    if(data){
+      nomeAtual = data.nome || "Usuário";
+      ehAdmin = !!data.is_admin;
+    }else{
+      nomeAtual = emailAtual.split("@")[0];
+    }
+
+    document.getElementById("nomeUsuario")
+      .innerText = nomeAtual;
+
+    renderizarFormularioAdmin();
+  }
+
+  function renderizarFormularioAdmin(){
+
+    const bloco = document.getElementById("blocoAdmin");
+
+    if(!ehAdmin){
+      bloco.innerHTML = `
+        <div class="nao-admin">
+          Você não tem permissão para registrar novas versões.
+          Somente administradores podem publicar atualizações.
+        </div>
+      `;
+      return;
+    }
+
+    bloco.innerHTML = `
+      <div class="cartao">
+        <h2>Publicar nova versão</h2>
+
+        <div class="form-campo">
+          <label>Número da versão</label>
+          <input
+            type="text"
+            id="formNumero"
+            placeholder="Ex: 1.3.0">
+        </div>
+
+        <div class="form-campo">
+          <label>Título (opcional)</label>
+          <input
+            type="text"
+            id="formTitulo"
+            placeholder="Ex: Melhorias na aba de relatórios">
+        </div>
+
+        <div class="form-campo">
+          <label>O que mudou</label>
+          <textarea
+            id="formDescricao"
+            placeholder="Descreva as novidades, correções e ajustes desta versão..."></textarea>
+        </div>
+
+        <button class="btn-publicar" onclick="publicarVersao()">
+          Publicar versão
+        </button>
+      </div>
+    `;
+  }
+
+  async function publicarVersao(){
+
+    const numero =
+      document.getElementById("formNumero").value.trim();
+
+    const titulo =
+      document.getElementById("formTitulo").value.trim() ||
+      "Nova atualização";
+
+    const descricao =
+      document.getElementById("formDescricao").value.trim();
+
+    if(!numero){
+      alert("Informe o número da versão.");
+      return;
+    }
+
+    if(!descricao){
+      alert("Descreva o que mudou nesta versão.");
+      return;
+    }
+
+    const { error } =
+      await supabaseClient
+      .from("versoes")
+      .insert({
+        numero: numero,
+        titulo: titulo,
+        descricao: descricao,
+        autor_email: emailAtual
+      });
+
+    if(error){
+      console.log(error);
+      alert("Erro ao publicar a versão.");
+      return;
+    }
+
+    document.getElementById("formNumero").value = "";
+    document.getElementById("formTitulo").value = "";
+    document.getElementById("formDescricao").value = "";
+
+    await carregarVersoes();
+
+    alert("Versão publicada com sucesso!");
+  }
+
+  async function excluirVersao(id){
+
+    if(!confirm("Deseja excluir esta versão do histórico?")){
+      return;
+    }
+
+    const { error } =
+      await supabaseClient
+      .from("versoes")
+      .delete()
+      .eq("id", id);
+
+    if(error){
+      console.log(error);
+      alert("Erro ao excluir.");
+      return;
+    }
+
+    await carregarVersoes();
+  }
+
+  async function carregarVersoes(){
+
+    const { data, error } =
+      await supabaseClient
+      .from("versoes")
+      .select("*")
+      .order("criado_em", { ascending: false });
+
+    if(error){
+      console.log(error);
+      return;
+    }
+
+    todasVersoes = data || [];
+
+    const versaoAtual =
+      todasVersoes[0]
+        ? todasVersoes[0].numero
+        : "0.0.0";
+
+    document.getElementById("btnVersao")
+      .innerText = "v" + versaoAtual;
+
+    renderizarListaVersoes(todasVersoes, "listaVersoes");
+
+    verificarNovidades();
+  }
+
+  function renderizarListaVersoes(lista, containerId){
+
+    const container =
+      document.getElementById(containerId);
+
+    if(lista.length === 0){
+      container.innerHTML =
+        '<div class="vazio">Nenhuma versão registrada ainda.</div>';
+      return;
+    }
+
+    container.innerHTML = lista.map(v => `
+      <div class="versao-item">
+
+        <div class="versao-topo">
+          <span class="versao-numero">v${escapeHtml(v.numero)}</span>
+          <span class="versao-data">${formatarDataHora(v.criado_em)}</span>
+        </div>
+
+        <div class="versao-titulo">${escapeHtml(v.titulo)}</div>
+
+        <div class="versao-descricao">${escapeHtml(v.descricao)}</div>
+
+        ${ehAdmin && v.autor_email === emailAtual
+          ? `<button class="btn-excluir" onclick="excluirVersao(${v.id})">Excluir</button>`
+          : ""}
+
+      </div>
+    `).join("");
+  }
+
+  function verificarNovidades(){
+
+    if(todasVersoes.length === 0) return;
+
+    const ultimaData =
+      new Date(todasVersoes[0].criado_em).getTime();
+
+    const ultimaVista =
+      parseInt(localStorage.getItem("ultimaVersaoVista") || "0", 10);
+
+    if(ultimaData > ultimaVista){
+      const badge =
+        document.createElement("span");
+      badge.innerText = "Novidades!";
+      badge.style.cssText =
+        "background:#16a34a; color:white; padding:3px 8px; border-radius:999px; font-size:11px; margin-left:8px; font-weight:bold;";
+
+      const btn =
+        document.getElementById("btnVersao");
+      if(!btn.querySelector("span")){
+        btn.appendChild(badge);
+      }
+    }
+  }
+
+  function abrirModalVersoes(){
+
+    const modal =
+      document.getElementById("modalVersoes");
+
+    const container =
+      document.getElementById("modalConteudo");
+
+    renderizarListaVersoes(todasVersoes, "modalConteudo");
+
+    modal.style.display = "flex";
+
+    if(todasVersoes.length > 0){
+      const ultimaData =
+        new Date(todasVersoes[0].criado_em).getTime();
+      localStorage.setItem(
+        "ultimaVersaoVista",
+        String(ultimaData)
+      );
+      const badge =
+        document.querySelector("#btnVersao span");
+      if(badge) badge.remove();
+    }
+  }
+
+  function fecharModalVersoes(){
+    document.getElementById("modalVersoes")
+      .style.display = "none";
+  }
+
+  document.getElementById("modalVersoes")
+    .addEventListener("click", (e) => {
+      if(e.target.id === "modalVersoes"){
+        fecharModalVersoes();
+      }
+    });
+
+  carregarUsuario();
+  carregarVersoes();
+
+</script>
+
+</body>
+</html>

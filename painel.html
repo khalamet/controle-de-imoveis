@@ -596,6 +596,7 @@
       await supabaseClient
       .from("imoveis")
       .select("*")
+      .eq("ativo", true)
       .order("nome");
 
     const grade =

@@ -24,12 +24,38 @@
       cursor:pointer;
       text-align:center;
       transition:0.2s;
+      position:relative;
     }
     .versao-atual:hover{
       background:rgba(59,130,246,0.18);
     }
     @media (max-width: 860px){
-      .versao-atual{ display:none; }
+      .sidebar-footer{
+        display:block !important;
+        padding:0 2px;
+        text-align:center;
+        font-size:9px;
+        line-height:1.35;
+      }
+      .sidebar-footer svg{
+        height:30px !important;
+        margin-bottom:5px !important;
+      }
+      .versao-atual{
+        display:block !important;
+        margin:8px 0 0 0;
+        padding:8px 2px;
+        font-size:9px;
+      }
+      .versao-atual span{
+        font-size:0 !important;
+        padding:4px !important;
+        margin:0 !important;
+        position:absolute;
+        top:3px;
+        right:3px;
+        border-radius:50% !important;
+      }
     }
   `;
   document.head.appendChild(estilo);
@@ -181,7 +207,7 @@
       parseInt(localStorage.getItem("ultimaVersaoVista") || "0", 10);
 
     if(ultimaData > ultimaVista && btnVersao){
-      if(!btnVersao.querySelector(".badge-novidades")){
+      if(!btnVersao.querySelector("span")){
         const badge = document.createElement("span");
         badge.className = "badge-novidades";
         badge.innerText = "Novidades!";
@@ -196,9 +222,9 @@
 
     const { data, error } =
       await supabaseClient
-      .from("versoes")
-      .select("*")
-      .order("criado_em", { ascending: false });
+        .from("versoes")
+        .select("*")
+        .order("criado_em", { ascending: false });
 
     if(error){
       console.log(error);
@@ -226,8 +252,7 @@
         "ultimaVersaoVista",
         String(new Date(todasVersoes[0].criado_em).getTime())
       );
-      const badge =
-        btnVersao && btnVersao.querySelector(".badge-novidades");
+      const badge = btnVersao && btnVersao.querySelector("span");
       if(badge) badge.remove();
     }
   }

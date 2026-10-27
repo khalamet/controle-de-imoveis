@@ -429,18 +429,19 @@
     }
 
     const ext = arquivo.name.split(".").pop();
+
     const nomeArquivo =
       "foto-" + slug + "-" + Date.now() + "." + ext;
 
-    const { error } =
+    const { error: uploadError } =
       await supabaseClient
       .storage
       .from("imoveis")
       .upload(nomeArquivo, arquivo, { upsert: true });
 
-    if(error){
-      console.log(error);
-      alert("Erro ao enviar foto.");
+    if(uploadError){
+      console.log(uploadError);
+      alert("Erro ao enviar a foto: " + uploadError.message);
       return;
     }
 
@@ -452,17 +453,28 @@
 
     const fotoUrl = urlData.publicUrl;
 
-    await supabaseClient
+    const { error: updateError } =
+      await supabaseClient
       .from("imoveis")
       .update({ foto_url: fotoUrl })
       .eq("id", imovelId);
+
+    if(updateError){
+      console.log(updateError);
+      alert(
+        "A foto foi enviada, mas não foi possível salvar no cadastro: " +
+        updateError.message
+      );
+      return;
+    }
 
     const img = document.getElementById("fotoPreview");
     img.src = fotoUrl;
     img.style.display = "block";
 
     document.getElementById("fotoArquivo").value = "";
-    alert("Foto enviada com sucesso.");
+
+    alert("Foto enviada e salva com sucesso.");
   }
 
   async function removerFoto(){

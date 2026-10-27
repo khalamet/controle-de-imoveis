@@ -23,8 +23,6 @@
       min-height:100vh;
     }
 
-    /* ---------- SIDEBAR ---------- */
-
     .sidebar{
       position:fixed;
       top:0; left:0; bottom:0;
@@ -107,8 +105,6 @@
       opacity:0.25;
       margin-bottom:10px;
     }
-
-    /* ---------- ÁREA PRINCIPAL ---------- */
 
     .main{ margin-left:260px; }
 
@@ -217,8 +213,6 @@
       color:#fca5a5;
     }
 
-    /* ---------- CONTEÚDO ---------- */
-
     .conteudo{
       padding:32px 40px;
       display:flex;
@@ -304,6 +298,13 @@
       border-color:#3b82f6;
     }
 
+    .sugestao-valor{
+      color:#93c5fd;
+      font-size:12px;
+      margin-top:4px;
+      font-style:italic;
+    }
+
     .btn-add{
       padding:12px 22px;
       border:none;
@@ -317,8 +318,6 @@
     }
 
     .btn-add:hover{ background:#15803d; }
-
-    /* ---------- GRÁFICO ---------- */
 
     .grafico-wrap{
       position:relative;
@@ -334,8 +333,6 @@
       color:#8fa3bb;
       font-size:15px;
     }
-
-    /* ---------- TABELA ---------- */
 
     .tabela-topo{
       display:flex;
@@ -382,6 +379,16 @@
       border-bottom:1px solid rgba(255,255,255,0.06);
     }
 
+    .tag-arquivado{
+      background:rgba(245,158,11,0.18);
+      color:#fbbf24;
+      padding:2px 8px;
+      border-radius:999px;
+      font-size:11px;
+      margin-left:8px;
+      font-weight:bold;
+    }
+
     .btn-excluir{
       padding:7px 14px;
       border:1px solid rgba(220,38,38,0.5);
@@ -403,8 +410,6 @@
       padding:40px 0;
       font-size:15px;
     }
-
-    /* ---------- RESPONSIVO ---------- */
 
     @media (max-width: 860px){
       .sidebar{ width:68px; padding:24px 10px; }
@@ -491,12 +496,6 @@
     Mais que imóveis,<br>é o nosso futuro.
   </div>
 
-  <div class="versao-atual" id="btnVersao" onclick="abrirModalVersoes()">
-    Versão ...
-  </div>
-
-</aside>
-
 </aside>
 
 <main class="main">
@@ -550,7 +549,7 @@
 
         <div class="form-campo">
           <label>Imóvel</label>
-          <select id="formImovel"></select>
+          <select id="formImovel" onchange="aoMudarImovel()"></select>
         </div>
 
         <div class="form-campo">
@@ -561,6 +560,7 @@
         <div class="form-campo">
           <label>Valor recebido</label>
           <input type="text" id="formValor" placeholder="Ex: 2.800,00">
+          <div class="sugestao-valor" id="sugestaoValor"></div>
         </div>
 
         <div class="form-campo" style="max-width:120px">
@@ -657,10 +657,6 @@
       .replaceAll('"', "&quot;");
   }
 
-  function emBreve(){
-    alert("Esta área ainda está em construção. Em breve!");
-  }
-
   function toggleMenu(){
     document.getElementById("menuUsuario")
       .classList.toggle("aberto");
@@ -702,6 +698,15 @@
     return d.toLocaleDateString("pt-BR");
   }
 
+  function ehPorto(imovel){
+    const texto = (
+      (imovel.nome || "") + " " +
+      (imovel.endereco || "") + " " +
+      (imovel.slug || "")
+    ).toLowerCase();
+    return texto.includes("porto");
+  }
+
   async function carregarNomeUsuario(){
 
     const email =
@@ -729,12 +734,59 @@
       .innerText = nome || "Usuário";
   }
 
+  function aoMudarImovel(){
+
+    const imovelId =
+      parseInt(document.getElementById("formImovel").value, 10);
+
+    const imovel = todosImoveis.find(i => i.id === imovelId);
+
+    const campoValor =
+      document.getElementById("formValor");
+
+    const campoMoeda =
+      document.getElementById("formMoeda");
+
+    const sugestao =
+      document.getElementById("sugestaoValor");
+
+    if(!imovel){
+      sugestao.innerText = "";
+      return;
+    }
+
+    // Ajusta a moeda sugerida conforme o imóvel
+    campoMoeda.value = ehPorto(imovel) ? "EUR" : "BRL";
+
+    if(imovel.valor_aluguel){
+      const valorNum = Number(imovel.valor_aluguel);
+      const valorFormatado = valorNum.toLocaleString(
+        "pt-BR",
+        { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+      );
+
+      if(!campoValor.value.trim()){
+        campoValor.value = valorFormatado;
+        sugestao.innerText =
+          "💡 Valor preenchido automaticamente a partir do cadastro.";
+      }else{
+        sugestao.innerText =
+          "💡 Valor do cadastro: " +
+          formatarMoeda(valorNum, campoMoeda.value);
+      }
+    }else{
+      sugestao.innerText = "";
+    }
+  }
+
   async function carregarDados(){
 
+    // Carrega TODOS os imóveis (ativos + arquivados)
+    // para o select não perder lançamentos antigos
     const { data: imoveis } =
       await supabaseClient
       .from("imoveis")
-      .select("id, nome")
+      .select("id, nome, slug, endereco, valor_aluguel, ativo")
       .order("nome");
 
     todosImoveis = imoveis || [];
@@ -742,9 +794,28 @@
     const selectImovel =
       document.getElementById("formImovel");
 
-    selectImovel.innerHTML = todosImoveis.map(i =>
-      `<option value="${i.id}">${escapeHtml(i.nome)}</option>`
-    ).join("");
+    const ativos = todosImoveis.filter(i => i.ativo !== false);
+    const inativos = todosImoveis.filter(i => i.ativo === false);
+
+    let html = "";
+
+    if(ativos.length > 0){
+      html += '<optgroup label="Ativos">';
+      html += ativos.map(i =>
+        `<option value="${i.id}">${escapeHtml(i.nome)}</option>`
+      ).join("");
+      html += '</optgroup>';
+    }
+
+    if(inativos.length > 0){
+      html += '<optgroup label="Arquivados">';
+      html += inativos.map(i =>
+        `<option value="${i.id}">${escapeHtml(i.nome)} (arquivado)</option>`
+      ).join("");
+      html += '</optgroup>';
+    }
+
+    selectImovel.innerHTML = html;
 
     const { data: pagamentos, error } =
       await supabaseClient
@@ -761,6 +832,7 @@
     todosPagamentos = pagamentos || [];
 
     montarFiltroAnos();
+    aoMudarImovel();
     renderizar();
   }
 
@@ -861,10 +933,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: {
-          mode: "index",
-          intersect: false
-        },
+        interaction: { mode: "index", intersect: false },
         plugins: {
           legend: {
             labels: {
@@ -930,8 +999,6 @@
     document.getElementById("tituloTabela")
       .innerText = "Lançamentos de " + ano;
 
-    /* ----- totais por moeda ----- */
-
     const totais = {};
 
     doAno.forEach(p => {
@@ -961,8 +1028,6 @@
       `).join("");
     }
 
-    /* ----- tabela ----- */
-
     const corpo =
       document.getElementById("corpoTabela");
 
@@ -978,10 +1043,15 @@
       corpo.innerHTML = doAno.map(p => {
 
         const imovel = todosImoveis.find(i => i.id === p.imovel_id);
+        const nomeImovel = imovel ? imovel.nome : "Imóvel removido";
+        const arquivado =
+          imovel && imovel.ativo === false
+            ? '<span class="tag-arquivado">arquivado</span>'
+            : "";
 
         return `
           <tr>
-            <td>${escapeHtml(imovel ? imovel.nome : "—")}</td>
+            <td>${escapeHtml(nomeImovel)}${arquivado}</td>
             <td>${formatarMes(p.competencia)}</td>
             <td>${formatarMoeda(p.valor, p.moeda)}</td>
             <td>${formatarData(p.data_recebimento)}</td>
@@ -1053,6 +1123,7 @@
 
     document.getElementById("formValor").value = "";
     document.getElementById("formData").value = "";
+    document.getElementById("sugestaoValor").innerText = "";
 
     await carregarDados();
 

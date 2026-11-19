@@ -17,6 +17,15 @@
       font-family:Arial, Helvetica, sans-serif;
     }
 
+    ::-webkit-scrollbar{ width:10px; height:10px; }
+    ::-webkit-scrollbar-track{ background:#0a1120; }
+    ::-webkit-scrollbar-thumb{
+      background:#1b2a44;
+      border-radius:999px;
+      border:2px solid #0a1120;
+    }
+    ::-webkit-scrollbar-thumb:hover{ background:#2b3f63; }
+
     body{
       background:#0d1626;
       min-height:100vh;
@@ -84,9 +93,7 @@
 
     .nav-item svg{ width:20px; height:20px; flex-shrink:0; }
 
-    .nav-item:hover{
-      background:rgba(255,255,255,0.05);
-    }
+    .nav-item:hover{ background:rgba(255,255,255,0.05); }
 
     .nav-item.active{
       background:#1b2a44;
@@ -111,9 +118,7 @@
 
     /* ---------- ÁREA PRINCIPAL ---------- */
 
-    .main{
-      margin-left:260px;
-    }
+    .main{ margin-left:260px; }
 
     .topo{
       background:
@@ -220,6 +225,47 @@
       color:#fca5a5;
     }
 
+    /* ---------- ALERTAS DE REAJUSTE ---------- */
+
+    .alertas-wrap{
+      padding:24px 40px 0 40px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .alerta-reajuste{
+      border-radius:14px;
+      padding:14px 18px;
+      font-size:14.5px;
+      line-height:1.5;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .alerta-pendente{
+      background:linear-gradient(
+        90deg,
+        rgba(220,38,38,0.18),
+        rgba(220,38,38,0.06)
+      );
+      border:1px solid rgba(220,38,38,0.45);
+      color:#fecaca;
+    }
+
+    .alerta-proximo{
+      background:linear-gradient(
+        90deg,
+        rgba(245,158,11,0.18),
+        rgba(245,158,11,0.06)
+      );
+      border:1px solid rgba(245,158,11,0.45);
+      color:#fde68a;
+    }
+
+    .alerta-reajuste strong{ color:#ffffff; }
+
     /* ---------- GRADE DE IMÓVEIS ---------- */
 
     .grade{
@@ -236,10 +282,13 @@
       overflow:hidden;
       display:flex;
       flex-direction:column;
-      transition:transform 0.2s;
+      transition:transform 0.2s, border-color 0.2s;
     }
 
-    .card:hover{ transform:translateY(-4px); }
+    .card:hover{
+      transform:translateY(-4px);
+      border-color:rgba(59,130,246,0.35);
+    }
 
     .card-foto{
       height:150px;
@@ -329,6 +378,36 @@
       flex-shrink:0;
     }
 
+    .card-saldo{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:#fbbf24;
+      font-size:13px;
+      font-weight:bold;
+      background:rgba(245,158,11,0.1);
+      border:1px solid rgba(245,158,11,0.3);
+      border-radius:8px;
+      padding:7px 10px;
+    }
+
+    .card-pills{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .pill-reajuste{
+      padding:5px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:bold;
+      color:#ffffff;
+    }
+
+    .pill-reajuste.pendente{ background:#dc2626; }
+    .pill-reajuste.proximo{ background:#d97706; }
+
     .card-botao{
       margin-top:auto;
       width:100%;
@@ -371,6 +450,7 @@
       .topo{ padding:20px; flex-direction:column; align-items:flex-start; }
       .topo-dir{ align-self:flex-end; }
       .grade{ padding:20px; }
+      .alertas-wrap{ padding:16px 20px 0 20px; }
     }
 
   </style>
@@ -428,9 +508,8 @@
         <path d="M12 3a6 6 0 0 0-4 10.5c.7.6 1 1.5 1 2.5h6c0-1 .3-1.9 1-2.5A6 6 0 0 0 12 3z"/>
       </svg>
       <span class="nav-texto">Sugestões</span>
-    </div>    
-    
-    
+    </div>
+
     <div class="nav-item" onclick="window.location.href='configuracoes.html'">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"/>
@@ -447,12 +526,6 @@
     </svg>
     Mais que imóveis,<br>é o nosso futuro.
   </div>
-
-  <div class="versao-atual" id="btnVersao" onclick="abrirModalVersoes()">
-    Versão ...
-  </div>
-
-</aside>
 
 </aside>
 
@@ -493,6 +566,8 @@
     </div>
 
   </header>
+
+  <div class="alertas-wrap" id="alertas"></div>
 
   <section class="grade" id="grade">
     <div class="vazio">Carregando imóveis...</div>
@@ -543,8 +618,52 @@
       .replaceAll('"', "&quot;");
   }
 
-  function emBreve(){
-    alert("Esta área ainda está em construção. Em breve!");
+  function formatarBRL(valor){
+    return "R$ " + Number(valor).toLocaleString(
+      "pt-BR",
+      { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+    );
+  }
+
+  function calcularReajuste(dataAssinatura, dataUltimoReajuste){
+
+    if(!dataAssinatura) return null;
+
+    const partes = String(dataAssinatura).split("-");
+    const anoInicio = parseInt(partes[0], 10);
+    const mes = parseInt(partes[1], 10) - 1;
+    const dia = parseInt(partes[2], 10);
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    let ultimo = null;
+    let proximo = null;
+
+    for(let ano = anoInicio + 1; ano <= hoje.getFullYear() + 1; ano++){
+      const d = new Date(ano, mes, dia);
+      d.setHours(0, 0, 0, 0);
+      if(d <= hoje){
+        ultimo = d;
+      }else{
+        proximo = d;
+        break;
+      }
+    }
+
+    if(!proximo){
+      proximo = new Date(hoje.getFullYear() + 1, mes, dia);
+    }
+
+    const dias = Math.ceil((proximo - hoje) / 86400000);
+
+    const ultReaj = dataUltimoReajuste
+      ? new Date(dataUltimoReajuste + "T00:00:00")
+      : null;
+
+    const pendente = !!ultimo && (!ultReaj || ultReaj < ultimo);
+
+    return { ultimo, proximo, dias, pendente };
   }
 
   function toggleMenu(){
@@ -563,7 +682,7 @@
       "imovel.html?id=" + encodeURIComponent(slug);
   }
 
-    async function carregarNomeUsuario(){
+  async function carregarNomeUsuario(){
 
     const email =
       localStorage.getItem("usuarioLogado") || "";
@@ -602,6 +721,9 @@
     const grade =
       document.getElementById("grade");
 
+    const alertas =
+      document.getElementById("alertas");
+
     if(error){
       console.log(error);
       grade.innerHTML =
@@ -610,10 +732,53 @@
     }
 
     if(!data || data.length === 0){
+      alertas.innerHTML = "";
       grade.innerHTML =
         '<div class="vazio">Nenhum imóvel cadastrado ainda.</div>';
       return;
     }
+
+    /* ----- alertas de reajuste ----- */
+
+    const pendentes = [];
+    const proximos = [];
+
+    data.forEach(imovel => {
+      if(!imovel.alugado) return;
+      const r = calcularReajuste(
+        imovel.data_assinatura,
+        imovel.data_ultimo_reajuste
+      );
+      if(!r) return;
+      if(r.pendente){
+        pendentes.push(imovel.nome);
+      }else if(r.dias <= 30){
+        proximos.push(imovel.nome + " (" + r.dias + "d)");
+      }
+    });
+
+    let htmlAlertas = "";
+
+    if(pendentes.length > 0){
+      htmlAlertas += `
+        <div class="alerta-reajuste alerta-pendente">
+          🔴 <span><strong>Reajuste pendente:</strong>
+          ${escapeHtml(pendentes.join(", "))}.
+          O ciclo de 12 meses do contrato já venceu sem reajuste registrado.</span>
+        </div>`;
+    }
+
+    if(proximos.length > 0){
+      htmlAlertas += `
+        <div class="alerta-reajuste alerta-proximo">
+          🟡 <span><strong>Reajuste nos próximos 30 dias:</strong>
+          ${escapeHtml(proximos.join(", "))}.</span>
+        </div>`;
+    }
+
+    alertas.innerHTML = htmlAlertas;
+
+    /* ----- cards ----- */
 
     grade.innerHTML = data.map(imovel => {
 
@@ -627,12 +792,40 @@
         ? `<div class="card-foto" style="background-image:url('${escapeHtml(imovel.foto_url)}')">${badge}</div>`
         : `<div class="card-foto sem-foto">${ICONE_CASA}${badge}</div>`;
 
+      const saldo = Number(imovel.saldo_devedor || 0);
+
+      const linhaSaldo = saldo > 0
+        ? `<div class="card-saldo">Saldo p/ quitação: ${formatarBRL(saldo)}</div>`
+        : "";
+
+      let pills = "";
+
+      if(alugado){
+        const r = calcularReajuste(
+          imovel.data_assinatura,
+          imovel.data_ultimo_reajuste
+        );
+        if(r){
+          if(r.pendente){
+            pills = '<span class="pill-reajuste pendente">Reajuste pendente</span>';
+          }else if(r.dias <= 60){
+            pills = '<span class="pill-reajuste proximo">Reajuste em ' + r.dias + 'd</span>';
+          }
+        }
+      }
+
+      const linhaPills = pills
+        ? `<div class="card-pills">${pills}</div>`
+        : "";
+
       return `
         <div class="card">
           ${foto}
           <div class="card-corpo">
             <div class="card-nome">${ICONE_CASA}${escapeHtml(imovel.nome)}</div>
             <div class="card-local">${ICONE_PIN}${escapeHtml(imovel.endereco)}</div>
+            ${linhaSaldo}
+            ${linhaPills}
             <button class="card-botao" onclick="abrirImovel('${escapeHtml(imovel.slug)}')">
               Abrir ${ICONE_SETA}
             </button>
@@ -648,7 +841,7 @@
 
 </script>
 
-<script src="versao.js"></script>
+<script src="versao.js?v=2"></script>
 
 </body>
 </html>

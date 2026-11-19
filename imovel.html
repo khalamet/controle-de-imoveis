@@ -18,6 +18,15 @@
       font-family:Arial,sans-serif;
     }
 
+    ::-webkit-scrollbar{ width:10px; height:10px; }
+    ::-webkit-scrollbar-track{ background:#e2e8f0; }
+    ::-webkit-scrollbar-thumb{
+      background:#94a3b8;
+      border-radius:999px;
+      border:2px solid #e2e8f0;
+    }
+    ::-webkit-scrollbar-thumb:hover{ background:#64748b; }
+
     body{
       background:#f1f5f9;
       padding:40px;
@@ -49,6 +58,14 @@
       margin-bottom:35px;
       color:#0f172a;
       font-size:36px;
+    }
+
+    h2{
+      color:#0f172a;
+      font-size:20px;
+      margin:35px 0 18px 0;
+      padding-top:25px;
+      border-top:1px solid #e2e8f0;
     }
 
     .campo{
@@ -92,6 +109,116 @@
       flex-wrap:wrap;
     }
 
+    .reajuste-box{
+      border-radius:12px;
+      padding:16px 18px;
+      font-size:14.5px;
+      line-height:1.6;
+      margin-bottom:18px;
+    }
+
+    .reajuste-ok{
+      background:rgba(22,163,74,0.1);
+      border:1px solid rgba(22,163,74,0.35);
+      color:#166534;
+    }
+
+    .reajuste-proximo{
+      background:rgba(245,158,11,0.12);
+      border:1px solid rgba(245,158,11,0.4);
+      color:#92400e;
+    }
+
+    .reajuste-pendente{
+      background:rgba(220,38,38,0.1);
+      border:1px solid rgba(220,38,38,0.4);
+      color:#991b1b;
+    }
+
+    .reajuste-neutro{
+      background:#f1f5f9;
+      border:1px solid #cbd5e1;
+      color:#475569;
+    }
+
+    .doc-linha-upload{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+      margin-bottom:18px;
+    }
+
+    .doc-linha-upload .campo{
+      margin-bottom:0;
+      flex:1;
+      min-width:180px;
+    }
+
+    .doc-item{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      border-radius:12px;
+      padding:12px 14px;
+      margin-bottom:10px;
+    }
+
+    .doc-badge{
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:bold;
+      color:white;
+      flex-shrink:0;
+    }
+
+    .doc-roxo{ background:#7c3aed; }
+    .doc-ambar{ background:#d97706; }
+    .doc-azul{ background:#2563eb; }
+    .doc-verde{ background:#16a34a; }
+    .doc-teal{ background:#0d9488; }
+    .doc-cinza{ background:#64748b; }
+
+    .doc-info{
+      flex:1;
+      min-width:160px;
+    }
+
+    .doc-nome{
+      color:#0f172a;
+      font-size:14.5px;
+      font-weight:bold;
+      word-break:break-all;
+    }
+
+    .doc-data{
+      color:#64748b;
+      font-size:12px;
+    }
+
+    .doc-acoes{
+      display:flex;
+      gap:8px;
+    }
+
+    .doc-acoes a,
+    .doc-acoes button{
+      padding:8px 14px;
+      border-radius:8px;
+      font-size:13px;
+      text-decoration:none;
+      cursor:pointer;
+      border:none;
+      color:white;
+    }
+
+    .doc-abrir{ background:#2563eb; }
+    .doc-excluir{ background:#dc2626; }
+
     .botoes{
       display:flex;
       gap:15px;
@@ -111,7 +238,10 @@
       color:white;
       font-size:16px;
       cursor:pointer;
+      transition:filter 0.2s;
     }
+
+    button:hover{ filter:brightness(1.1); }
 
     .salvar{ background:#16a34a; }
     .voltar{ background:#0f172a; }
@@ -120,6 +250,7 @@
     .carneleao{ background:#7c3aed; }
     .portaldasfinancas{ background:#ea580c; }
     .arquivar{ background:#b45309; }
+    .reajuste-btn{ background:#0d9488; }
 
     .status{
       margin-top:25px;
@@ -136,6 +267,12 @@
       color:#2563eb;
       text-decoration:none;
       font-weight:bold;
+    }
+
+    .vazio-docs{
+      color:#64748b;
+      font-size:14px;
+      padding:10px 0;
     }
 
   </style>
@@ -155,18 +292,14 @@
     <img id="fotoPreview" class="foto-preview" style="display:none">
     <input type="file" id="fotoArquivo" accept="image/*">
     <div class="foto-acoes" style="margin-top:12px">
-      <button class="upload" onclick="uploadFoto()">
-        Enviar foto
-      </button>
-      <button class="remover" onclick="removerFoto()">
-        Remover foto
-      </button>
+      <button class="upload" onclick="uploadFoto()">Enviar foto</button>
+      <button class="remover" onclick="removerFoto()">Remover foto</button>
     </div>
   </div>
 
   <div class="campo">
     <label>Nome do imóvel</label>
-    <input type="text" id="nome">
+    <input type="text" id="nome" oninput="toggleAluguel()">
   </div>
 
   <div class="campo">
@@ -182,6 +315,11 @@
   <div class="campo">
     <label>Matrícula IPTU</label>
     <input type="text" id="iptu">
+  </div>
+
+  <div class="campo">
+    <label>Saldo devedor para quitação (R$)</label>
+    <input type="text" id="saldo_devedor" placeholder="Ex: 180.000,00 (deixe vazio se quitado)">
   </div>
 
   <div class="campo">
@@ -210,6 +348,25 @@
     </div>
 
     <div class="campo">
+      <label>Data de assinatura do contrato</label>
+      <input type="date" id="data_assinatura" onchange="atualizarReajuste()">
+    </div>
+
+    <div class="campo">
+      <label>Último reajuste realizado</label>
+      <input type="date" id="data_ultimo_reajuste" onchange="atualizarReajuste()">
+    </div>
+
+    <div class="reajuste-box reajuste-neutro" id="reajusteBox"></div>
+
+    <button
+      class="reajuste-btn"
+      style="margin-bottom:25px"
+      onclick="marcarReajuste()">
+      Marcar reajuste como realizado
+    </button>
+
+    <div class="campo">
       <label>Contrato de aluguel</label>
       <input type="file" id="contratoArquivo">
 
@@ -232,11 +389,40 @@
 
   </div>
 
+  <h2>Documentos do imóvel</h2>
+
+  <div class="doc-linha-upload">
+
+    <div class="campo">
+      <label>Tipo de documento</label>
+      <select id="docTipo">
+        <option value="RGI">RGI / Matrícula</option>
+        <option value="Escritura">Escritura</option>
+        <option value="IPTU">IPTU / Carnê</option>
+        <option value="Contrato">Contrato</option>
+        <option value="Comprovante">Comprovante</option>
+        <option value="Outro">Outro</option>
+      </select>
+    </div>
+
+    <div class="campo">
+      <label>Arquivo</label>
+      <input type="file" id="docArquivo">
+    </div>
+
+    <button class="upload" onclick="uploadDocumento()">
+      Enviar documento
+    </button>
+
+  </div>
+
+  <div id="listaDocumentos">
+    <div class="vazio-docs">Carregando documentos...</div>
+  </div>
+
   <div class="botoes">
 
-    <button class="salvar" onclick="salvar()">
-      Salvar
-    </button>
+    <button class="salvar" onclick="salvar()">Salvar</button>
 
     <button
       class="upload"
@@ -269,9 +455,7 @@
       Arquivar imóvel
     </button>
 
-    <button class="voltar" onclick="voltar()">
-      Voltar
-    </button>
+    <button class="voltar" onclick="voltar()">Voltar</button>
 
   </div>
 
@@ -303,6 +487,136 @@
 
   let imovelId = null;
   let imovelAtivo = true;
+
+  const CORES_TIPO = {
+    "RGI": "doc-roxo",
+    "IPTU": "doc-ambar",
+    "Escritura": "doc-azul",
+    "Contrato": "doc-verde",
+    "Comprovante": "doc-teal",
+    "Outro": "doc-cinza"
+  };
+
+  function escapeHtml(texto){
+    return String(texto || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+  }
+
+  function parseValor(txt){
+    let s = String(txt || "").trim();
+    if(!s) return null;
+    if(s.includes(",")){
+      s = s.replace(/\./g, "").replace(",", ".");
+    }
+    const n = parseFloat(s);
+    return isNaN(n) ? null : n;
+  }
+
+  function formatarBRL(valor){
+    return "R$ " + Number(valor).toLocaleString(
+      "pt-BR",
+      { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+    );
+  }
+
+  function calcularReajuste(dataAssinatura, dataUltimoReajuste){
+
+    if(!dataAssinatura) return null;
+
+    const partes = String(dataAssinatura).split("-");
+    const anoInicio = parseInt(partes[0], 10);
+    const mes = parseInt(partes[1], 10) - 1;
+    const dia = parseInt(partes[2], 10);
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    let ultimo = null;
+    let proximo = null;
+
+    for(let ano = anoInicio + 1; ano <= hoje.getFullYear() + 1; ano++){
+      const d = new Date(ano, mes, dia);
+      d.setHours(0, 0, 0, 0);
+      if(d <= hoje){
+        ultimo = d;
+      }else{
+        proximo = d;
+        break;
+      }
+    }
+
+    if(!proximo){
+      proximo = new Date(hoje.getFullYear() + 1, mes, dia);
+    }
+
+    const dias = Math.ceil((proximo - hoje) / 86400000);
+
+    const ultReaj = dataUltimoReajuste
+      ? new Date(dataUltimoReajuste + "T00:00:00")
+      : null;
+
+    const pendente = !!ultimo && (!ultReaj || ultReaj < ultimo);
+
+    return { ultimo, proximo, dias, pendente };
+  }
+
+  function atualizarReajuste(){
+
+    const box = document.getElementById("reajusteBox");
+
+    const assinatura =
+      document.getElementById("data_assinatura").value;
+
+    const ultReajuste =
+      document.getElementById("data_ultimo_reajuste").value;
+
+    const r = calcularReajuste(assinatura, ultReajuste);
+
+    if(!r){
+      box.className = "reajuste-box reajuste-neutro";
+      box.innerHTML =
+        "Informe a data de assinatura do contrato para ativar o alerta de reajuste anual (a cada 12 meses).";
+      return;
+    }
+
+    const dataProximo =
+      r.proximo.toLocaleDateString("pt-BR");
+
+    if(r.pendente){
+      box.className = "reajuste-box reajuste-pendente";
+      box.innerHTML =
+        "🔴 <strong>Reajuste pendente:</strong> o ciclo de 12 meses completou em " +
+        r.ultimo.toLocaleDateString("pt-BR") +
+        " e ainda não há reajuste registrado. Próximo ciclo: " +
+        dataProximo + ".";
+      return;
+    }
+
+    if(r.dias <= 60){
+      box.className = "reajuste-box reajuste-proximo";
+      box.innerHTML =
+        "🟡 <strong>Reajuste se aproximando:</strong> o próximo ciclo de 12 meses vence em " +
+        dataProximo + " (em " + r.dias + " dias).";
+      return;
+    }
+
+    box.className = "reajuste-box reajuste-ok";
+    box.innerHTML =
+      "🟢 <strong>Reajuste em dia.</strong> Próximo ciclo de 12 meses: " +
+      dataProximo + " (em " + r.dias + " dias).";
+  }
+
+  async function marcarReajuste(){
+
+    const hoje = new Date().toISOString().slice(0, 10);
+
+    document.getElementById("data_ultimo_reajuste").value = hoje;
+
+    await salvar();
+  }
 
   function verificarPorto(){
     const nome =
@@ -386,6 +700,15 @@
     document.getElementById("endereco").value = data.endereco;
     document.getElementById("rgi").value = data.rgi;
     document.getElementById("iptu").value = data.iptu;
+
+    document.getElementById("saldo_devedor").value =
+      data.saldo_devedor != null
+        ? Number(data.saldo_devedor).toLocaleString(
+            "pt-BR",
+            { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+          )
+        : "";
+
     document.getElementById("alugado").value =
       data.alugado ? "sim" : "nao";
     document.getElementById("valor_aluguel").value =
@@ -394,6 +717,10 @@
       data.ultimo_pagamento || "";
     document.getElementById("inquilino").value =
       data.inquilino || "";
+    document.getElementById("data_assinatura").value =
+      data.data_assinatura || "";
+    document.getElementById("data_ultimo_reajuste").value =
+      data.data_ultimo_reajuste || "";
 
     if(data.foto_url){
       const img = document.getElementById("fotoPreview");
@@ -411,7 +738,158 @@
     }
 
     toggleAluguel();
+    atualizarReajuste();
+    carregarDocumentos();
   }
+
+  /* ---------- DOCUMENTOS ---------- */
+
+  async function carregarDocumentos(){
+
+    const { data, error } =
+      await supabaseClient
+      .from("documentos")
+      .select("*")
+      .eq("imovel_id", imovelId)
+      .order("criado_em", { ascending: false });
+
+    const lista = document.getElementById("listaDocumentos");
+
+    if(error){
+      console.log(error);
+      lista.innerHTML =
+        '<div class="vazio-docs">Erro ao carregar documentos.</div>';
+      return;
+    }
+
+    if(!data || data.length === 0){
+      lista.innerHTML =
+        '<div class="vazio-docs">Nenhum documento enviado ainda. Envie o RGI, a escritura, o carnê do IPTU ou outros arquivos deste imóvel.</div>';
+      return;
+    }
+
+    lista.innerHTML = data.map(d => `
+      <div class="doc-item">
+        <span class="doc-badge ${CORES_TIPO[d.tipo] || "doc-cinza"}">
+          ${escapeHtml(d.tipo)}
+        </span>
+        <div class="doc-info">
+          <div class="doc-nome">${escapeHtml(d.nome)}</div>
+          <div class="doc-data">
+            Enviado em ${new Date(d.criado_em).toLocaleDateString("pt-BR")}
+          </div>
+        </div>
+        <div class="doc-acoes">
+          <a class="doc-abrir" href="${escapeHtml(d.url)}" target="_blank">
+            Abrir
+          </a>
+          <button
+            class="doc-excluir"
+            onclick="excluirDocumento(${d.id}, '${escapeHtml(d.url)}')">
+            Excluir
+          </button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  async function uploadDocumento(){
+
+    const arquivo =
+      document.getElementById("docArquivo").files[0];
+
+    if(!arquivo){
+      alert("Selecione um arquivo.");
+      return;
+    }
+
+    const tipo = document.getElementById("docTipo").value;
+
+    const extensao = arquivo.name.split(".").pop();
+
+    const nomeSemAcento = arquivo.name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    const nomeSeguro =
+      nomeSemAcento.replace(/[^a-zA-Z0-9.]/g, "_");
+
+    const caminho =
+      slug + "/" + Date.now() + "-" + nomeSeguro;
+
+    const { error: uploadError } =
+      await supabaseClient
+      .storage
+      .from("documentos")
+      .upload(caminho, arquivo, { upsert: true });
+
+    if(uploadError){
+      console.log(uploadError);
+      alert("Erro ao enviar documento: " + uploadError.message);
+      return;
+    }
+
+    const { data: urlData } =
+      supabaseClient
+      .storage
+      .from("documentos")
+      .getPublicUrl(caminho);
+
+    const { error: insertError } =
+      await supabaseClient
+      .from("documentos")
+      .insert({
+        imovel_id: imovelId,
+        tipo: tipo,
+        nome: arquivo.name,
+        url: urlData.publicUrl
+      });
+
+    if(insertError){
+      console.log(insertError);
+      alert("Arquivo enviado, mas erro ao registrar: " + insertError.message);
+      return;
+    }
+
+    document.getElementById("docArquivo").value = "";
+
+    await carregarDocumentos();
+
+    alert("Documento enviado com sucesso.");
+  }
+
+  async function excluirDocumento(id, url){
+
+    if(!confirm("Deseja excluir este documento?")){
+      return;
+    }
+
+    const partes = String(url).split("/documentos/");
+
+    if(partes[1]){
+      const caminho = decodeURIComponent(partes[1]);
+      await supabaseClient
+        .storage
+        .from("documentos")
+        .remove([caminho]);
+    }
+
+    const { error } =
+      await supabaseClient
+      .from("documentos")
+      .delete()
+      .eq("id", id);
+
+    if(error){
+      console.log(error);
+      alert("Erro ao excluir documento.");
+      return;
+    }
+
+    await carregarDocumentos();
+  }
+
+  /* ---------- FOTO ---------- */
 
   async function uploadFoto(){
 
@@ -494,6 +972,8 @@
 
     alert("Foto removida.");
   }
+
+  /* ---------- CONTRATO ---------- */
 
   async function uploadContrato(){
 
@@ -594,6 +1074,8 @@
     document.getElementById("contratoAtual").innerHTML = "";
     alert("Contrato removido com sucesso.");
   }
+
+  /* ---------- RECIBO E PORTAIS ---------- */
 
   async function emitirRecibo(){
 
@@ -721,6 +1203,8 @@ Deseja continuar?`;
     }
   }
 
+  /* ---------- SALVAR / ARQUIVAR ---------- */
+
   async function arquivarImovel(){
 
     if(!confirm(
@@ -757,18 +1241,24 @@ Deseja continuar?`;
         endereco: document.getElementById("endereco").value,
         rgi: document.getElementById("rgi").value,
         iptu: document.getElementById("iptu").value,
+        saldo_devedor:
+          parseValor(document.getElementById("saldo_devedor").value),
         alugado: alugado,
         valor_aluguel: document.getElementById("valor_aluguel").value,
         ultimo_pagamento:
           document.getElementById("ultimo_pagamento").value || null,
-        inquilino: document.getElementById("inquilino").value
+        inquilino: document.getElementById("inquilino").value,
+        data_assinatura:
+          document.getElementById("data_assinatura").value || null,
+        data_ultimo_reajuste:
+          document.getElementById("data_ultimo_reajuste").value || null
       })
       .eq("id", imovelId);
 
     if(error){
       console.log(error);
       document.getElementById("status").innerText =
-        "Erro ao salvar.";
+        "Erro ao salvar: " + error.message;
       return;
     }
 
@@ -776,6 +1266,7 @@ Deseja continuar?`;
       "Alterações salvas com sucesso.";
 
     toggleAluguel();
+    atualizarReajuste();
   }
 
   function voltar(){
